@@ -109,6 +109,17 @@ html {
 .scrollbar-hide::-webkit-scrollbar { display: none; }
 .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
 
+/* Dark theme date/time inputs */
+input[type="date"].dark-picker,
+input[type="time"].dark-picker {
+  color-scheme: dark;
+}
+input[type="date"].dark-picker::-webkit-calendar-picker-indicator,
+input[type="time"].dark-picker::-webkit-calendar-picker-indicator {
+  filter: invert(1) opacity(0.4);
+  cursor: pointer;
+}
+
 .bg-gradient-hero {
   background: linear-gradient(160deg, #0F1629 0%, #1A2340 40%, #0F1629 70%, #1a1a2e 100%);
 }

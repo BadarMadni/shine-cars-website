@@ -64,7 +64,7 @@ export default function Navbar() {
               {SITE.phone}
             </a>
             <Link
-              href="/contact"
+              href="/booking"
               className="bg-gradient-to-r from-crimson to-crimson-dark text-white px-6 py-2.5 rounded-full font-semibold hover:shadow-[0_0_25px_rgba(204,34,41,0.4)] transition-all duration-300"
             >
               Book Now
@@ -110,7 +110,7 @@ export default function Navbar() {
               ))}
               <div className="pt-4 border-t border-white/10">
                 <Link
-                  href="/contact"
+                  href="/booking"
                   onClick={() => setIsOpen(false)}
                   className="block text-center bg-gradient-to-r from-crimson to-crimson-dark text-white py-3 rounded-full font-semibold"
                 >

@@ -91,7 +91,7 @@ export default function HeroSection() {
                 transition={{ delay: 0.4 }}
                 className="mt-8 flex flex-col sm:flex-row gap-3 justify-center lg:justify-start"
               >
-                <GradientButton href="/contact" size="lg">
+                <GradientButton href="/booking" size="lg">
                   Book a Ride <ArrowRight className="w-5 h-5" />
                 </GradientButton>
                 <GradientButton href="/services" variant="outline" size="lg">
@@ -117,7 +117,7 @@ export default function HeroSection() {
               initial={{ opacity: 0, y: 40 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3, duration: 0.7 }}
-              className="w-full sm:w-[380px] lg:w-[360px] shrink-0"
+              className="w-full sm:w-[420px] lg:w-[400px] shrink-0"
             >
               <BookingCard />
             </motion.div>
