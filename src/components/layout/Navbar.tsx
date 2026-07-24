@@ -25,7 +25,7 @@ export default function Navbar() {
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
         scrolled
           ? "bg-[#1B2138] shadow-2xl shadow-black/20"
-          : "bg-transparent"
+          : "bg-[#1B2138] lg:bg-transparent"
       }`}
     >
       <nav className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
