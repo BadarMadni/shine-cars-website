@@ -46,3 +46,5 @@ next-env.d.ts
 # Backup images
 public/images/hero-car-old.jpg
 public/images/hero-car.webp
+
+/src/generated/prisma

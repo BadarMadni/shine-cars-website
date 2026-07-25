@@ -13,8 +13,12 @@ export default function HeroAddressInput({ id, placeholder, icon, iconBg, ready,
   const handlePlace = useCallback(() => {
     const place = acRef.current?.getPlace();
     if (place?.geometry?.location) {
+      const name = place.name || "";
+      const formatted = place.formatted_address || "";
+      const address = name && formatted && !formatted.toLowerCase().includes(name.toLowerCase())
+        ? `${name}, ${formatted}` : formatted || name;
       onSelect({
-        address: place.formatted_address || place.name || "",
+        address,
         lat: place.geometry.location.lat(),
         lng: place.geometry.location.lng(),
       });

@@ -25,6 +25,24 @@ export default function BookingCard() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [booked, setBooked] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  const confirmBooking = async () => {
+    if (!result || !pickup || !dropoff) return;
+    setSaving(true);
+    try {
+      await fetch("/api/bookings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name, phone, pickup: pickup.address, dropoff: dropoff.address,
+          date, time, distance: result.distance, fare: result.fare, source: "homepage",
+        }),
+      });
+    } catch {}
+    setSaving(false);
+    setBooked(true);
+  };
 
   const getQuote = () => {
     if (!name.trim() || !phone.trim()) { setError("Enter name & phone"); return; }
@@ -135,9 +153,9 @@ export default function BookingCard() {
                   </span>
                 </div>
                 <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
-                  onClick={() => setBooked(true)}
-                  className="w-full py-3 rounded-xl bg-gradient-to-r from-green-500 to-green-600 text-white font-bold text-sm flex items-center justify-center gap-2 cursor-pointer">
-                  Confirm Booking <ArrowRight className="w-4 h-4" />
+                  onClick={confirmBooking} disabled={saving}
+                  className="w-full py-3 rounded-xl bg-gradient-to-r from-green-500 to-green-600 text-white font-bold text-sm flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60">
+                  {saving ? "Saving..." : "Confirm Booking"} {!saving && <ArrowRight className="w-4 h-4" />}
                 </motion.button>
               </div>
             </motion.div>

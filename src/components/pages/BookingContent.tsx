@@ -28,10 +28,19 @@ export default function BookingContent() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  const buildAddress = (place: google.maps.places.PlaceResult) => {
+    const name = place.name || "";
+    const formatted = place.formatted_address || "";
+    if (name && formatted && !formatted.toLowerCase().includes(name.toLowerCase())) {
+      return `${name}, ${formatted}`;
+    }
+    return formatted || name;
+  };
+
   const handlePickup = useCallback((place: google.maps.places.PlaceResult) => {
     if (!place.geometry?.location) return;
     setPickup({
-      address: place.formatted_address || place.name || "",
+      address: buildAddress(place),
       lat: place.geometry.location.lat(),
       lng: place.geometry.location.lng(),
     });
@@ -41,7 +50,7 @@ export default function BookingContent() {
   const handleDropoff = useCallback((place: google.maps.places.PlaceResult) => {
     if (!place.geometry?.location) return;
     setDropoff({
-      address: place.formatted_address || place.name || "",
+      address: buildAddress(place),
       lat: place.geometry.location.lat(),
       lng: place.geometry.location.lng(),
     });
