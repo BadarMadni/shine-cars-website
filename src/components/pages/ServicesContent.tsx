@@ -80,7 +80,7 @@ export default function ServicesContent() {
                     </h3>
                     <p className="text-navy/55 leading-relaxed">{service.desc}</p>
                     <div className="mt-6">
-                      <GradientButton href="/contact" size="sm">
+                      <GradientButton href="/booking" size="sm">
                         Book Now <ArrowRight className="w-4 h-4" />
                       </GradientButton>
                     </div>

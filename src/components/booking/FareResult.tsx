@@ -10,6 +10,7 @@ interface FareResultProps {
   dropoff: string;
   distanceMiles: number;
   fare: number;
+  surcharge?: boolean;
   name: string;
   phone: string;
   date: string;
@@ -18,7 +19,7 @@ interface FareResultProps {
 }
 
 export default function FareResult({
-  pickup, dropoff, distanceMiles, fare, name, phone, date, time, onReset,
+  pickup, dropoff, distanceMiles, fare, surcharge, name, phone, date, time, onReset,
 }: FareResultProps) {
   const ref = useRef<HTMLDivElement>(null);
   const [booked, setBooked] = useState(false);
@@ -87,6 +88,11 @@ export default function FareResult({
             <div className="text-4xl font-extrabold gradient-text">
               &pound;{fare.toFixed(2)}
             </div>
+            {surcharge && (
+              <div className="text-yellow-400/80 text-xs mt-1">
+                Includes £2.00 out-of-area surcharge
+              </div>
+            )}
           </div>
           <div className="text-white/40 text-xs text-right max-w-[180px]">
             Final fare may vary based on traffic, waiting time, and route changes.

@@ -7,7 +7,7 @@ import {
   ArrowRight, MapPin, Navigation, Route, PoundSterling,
   User, Phone, Calendar, Clock,
 } from "lucide-react";
-import { calculateFare, metersToMiles } from "@/lib/fare";
+import { calculateFare, metersToMiles, isOutsideOfficeRadius, SURCHARGE } from "@/lib/fare";
 import SuccessModal from "@/components/booking/SuccessModal";
 import HeroAddressInput from "@/components/home/HeroAddressInput";
 
@@ -66,7 +66,7 @@ export default function BookingCard() {
         }
         const meters = response.rows[0].elements[0].distance.value;
         const miles = metersToMiles(meters);
-        setResult({ distance: miles, fare: calculateFare(miles) });
+        setResult({ distance: miles, fare: calculateFare(miles, pickup.lat, pickup.lng) });
       }
     );
   };
@@ -146,6 +146,11 @@ export default function BookingCard() {
                 <div className="flex items-center gap-2 text-white/60 text-xs">
                   <Route className="w-3.5 h-3.5 text-gold" /> {result.distance.toFixed(1)} miles
                 </div>
+                {pickup && isOutsideOfficeRadius(pickup.lat, pickup.lng) && (
+                  <div className="text-yellow-400/80 text-xs">
+                    +£{SURCHARGE.toFixed(2)} out-of-area surcharge applied
+                  </div>
+                )}
                 <div className="flex items-center gap-2 mb-3">
                   <PoundSterling className="w-5 h-5 text-gold" />
                   <span className="text-3xl font-extrabold gradient-text">

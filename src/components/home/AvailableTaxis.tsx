@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
-import { Users, Gauge, Fuel, ArrowRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
+import Link from "next/link";
 import AnimatedSection from "@/components/ui/AnimatedSection";
 
 const categories = [
@@ -16,54 +17,12 @@ const categories = [
 ];
 
 const taxis = [
-  {
-    name: "Toyota Camry Hybrid",
-    category: "Sedan",
-    image: "/images/taxi-sedan.jpg",
-    pricePerMile: "1.50",
-    seats: 4,
-    features: ["Hybrid Engine", "Leather Seats", "Wi-Fi"],
-  },
-  {
-    name: "Mercedes E-Class",
-    category: "Executive",
-    image: "/images/taxi-executive.jpg",
-    pricePerMile: "2.80",
-    seats: 4,
-    features: ["Premium Interior", "Climate Control", "USB-C"],
-  },
-  {
-    name: "BMW iX Electric",
-    category: "EV",
-    image: "/images/taxi-ev.jpg",
-    pricePerMile: "2.20",
-    seats: 4,
-    features: ["Zero Emissions", "Silent Ride", "Fast Charge"],
-  },
-  {
-    name: "Range Rover Sport",
-    category: "SUV",
-    image: "/images/taxi-suv.jpg",
-    pricePerMile: "3.00",
-    seats: 6,
-    features: ["Spacious", "All-Terrain", "Panoramic Roof"],
-  },
-  {
-    name: "Audi A8 L",
-    category: "Executive",
-    image: "/images/taxi-luxury.jpg",
-    pricePerMile: "3.50",
-    seats: 4,
-    features: ["Chauffeur Grade", "Massage Seats", "Bar"],
-  },
-  {
-    name: "VW Multivan",
-    category: "Minivan",
-    image: "/images/taxi-minivan.jpg",
-    pricePerMile: "2.00",
-    seats: 7,
-    features: ["Family Friendly", "Luggage Space", "Sliding Doors"],
-  },
+  { category: "Sedan", image: "/images/taxi-sedan.jpg" },
+  { category: "Executive", image: "/images/taxi-executive.jpg" },
+  { category: "EV", image: "/images/taxi-ev.jpg" },
+  { category: "SUV", image: "/images/taxi-suv.jpg" },
+  { category: "Executive", image: "/images/taxi-luxury.jpg" },
+  { category: "Minivan", image: "/images/taxi-minivan.jpg" },
 ];
 
 export default function AvailableTaxis() {
@@ -113,8 +72,8 @@ export default function AvailableTaxis() {
         {/* Taxi Cards */}
         <motion.div layout className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-8">
           <AnimatePresence mode="popLayout">
-            {filtered.map((taxi) => (
-              <TaxiCard key={taxi.name} taxi={taxi} />
+            {filtered.map((taxi, i) => (
+              <TaxiCard key={`${taxi.category}-${i}`} taxi={taxi} />
             ))}
           </AnimatePresence>
         </motion.div>
@@ -133,11 +92,10 @@ function TaxiCard({ taxi }: { taxi: (typeof taxis)[number] }) {
       transition={{ duration: 0.35 }}
       className="group bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-2xl hover:shadow-crimson/10 transition-all duration-500 border border-gray-100"
     >
-      {/* Image */}
-      <div className="relative h-52 overflow-hidden">
+      <div className="relative h-60 overflow-hidden">
         <Image
           src={taxi.image}
-          alt={taxi.name}
+          alt={taxi.category}
           fill
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           className="object-cover group-hover:scale-110 transition-transform duration-700"
@@ -148,44 +106,16 @@ function TaxiCard({ taxi }: { taxi: (typeof taxis)[number] }) {
         </div>
       </div>
 
-      {/* Content */}
-      <div className="p-6">
-        <h3 className="text-xl font-bold text-navy mb-2">{taxi.name}</h3>
-
-        <div className="flex items-baseline gap-1 mb-5">
-          <span className="text-3xl font-extrabold gradient-text">
-            &pound;{taxi.pricePerMile}
-          </span>
-          <span className="text-navy/55 text-sm">/mile</span>
-        </div>
-
-        {/* Specs */}
-        <div className="space-y-3 mb-6">
-          <div className="flex items-center justify-between text-sm">
-            <span className="flex items-center gap-2 text-navy/60">
-              <Users className="w-4 h-4 text-crimson" /> Passenger Seats
-            </span>
-            <span className="font-semibold text-navy">
-              {String(taxi.seats).padStart(2, "0")}
-            </span>
-          </div>
-          {taxi.features.slice(0, 2).map((f) => (
-            <div key={f} className="flex items-center justify-between text-sm">
-              <span className="flex items-center gap-2 text-navy/60">
-                <Gauge className="w-4 h-4 text-crimson" /> {f}
-              </span>
-              <Fuel className="w-4 h-4 text-gold" />
-            </div>
-          ))}
-        </div>
-
-        <motion.button
-          whileHover={{ scale: 1.03 }}
-          whileTap={{ scale: 0.97 }}
-          className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl bg-gradient-to-r from-navy to-navy-light text-white font-semibold text-sm hover:from-crimson hover:to-crimson-dark transition-all duration-500 cursor-pointer"
-        >
-          Book Now <ArrowRight className="w-4 h-4" />
-        </motion.button>
+      <div className="p-5">
+        <Link href="/booking">
+          <motion.div
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.97 }}
+            className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl bg-gradient-to-r from-navy to-navy-light text-white font-semibold text-sm hover:from-crimson hover:to-crimson-dark transition-all duration-500 cursor-pointer"
+          >
+            Book Now <ArrowRight className="w-4 h-4" />
+          </motion.div>
+        </Link>
       </div>
     </motion.div>
   );

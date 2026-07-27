@@ -8,7 +8,7 @@ import PageHero from "@/components/shared/PageHero";
 import AnimatedSection from "@/components/ui/AnimatedSection";
 import AddressInput from "@/components/booking/AddressInput";
 import FareResult from "@/components/booking/FareResult";
-import { calculateFare, metersToMiles } from "@/lib/fare";
+import { calculateFare, metersToMiles, isOutsideOfficeRadius, SURCHARGE } from "@/lib/fare";
 
 interface PlaceData {
   address: string;
@@ -89,7 +89,7 @@ export default function BookingContent() {
         }
         const meters = response.rows[0].elements[0].distance.value;
         const miles = metersToMiles(meters);
-        const fare = calculateFare(miles);
+        const fare = calculateFare(miles, pickup.lat, pickup.lng);
         setResult({ distance: miles, fare });
       }
     );
@@ -243,6 +243,7 @@ export default function BookingContent() {
                   dropoff={dropoff.address}
                   distanceMiles={result.distance}
                   fare={result.fare}
+                  surcharge={isOutsideOfficeRadius(pickup.lat, pickup.lng)}
                   name={name}
                   phone={phone}
                   date={date}
