@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { name, phone, pickup, dropoff, date, time, distance, fare, source } = body;
+    const { name, phone, pickup, dropoff, date, time, distance, fare, vehicle, source } = body;
 
     if (!name || !phone || !pickup || !dropoff || !date || !time) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
@@ -15,6 +15,7 @@ export async function POST(req: NextRequest) {
         name, phone, pickup, dropoff, date, time,
         distance: parseFloat(distance) || 0,
         fare: parseFloat(fare) || 0,
+        vehicle: vehicle || "car",
         source: source || "website",
         status: "pending",
       },

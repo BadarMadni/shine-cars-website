@@ -4,17 +4,24 @@ const OFFICE_LNG = 0.1601;
 const SURCHARGE_RADIUS_MILES = 3;
 const SURCHARGE_AMOUNT = 2;
 
+export type VehicleType = "car" | "mpv";
+
+export const VEHICLES = {
+  car: { label: "Car", passengers: 4, baseFare: 5 },
+  mpv: { label: "MPV", passengers: 6, baseFare: 7 },
+} as const;
+
 /**
  * Shine Cars fare calculator
- * - Base fare: £5 (covers first 1.5 miles)
+ * - Car base fare: £5 | MPV base fare: £7 (covers first 1.5 miles)
  * - 1.5 to 10 miles: £2.30 per mile
  * - Over 10 miles: £1.80 per mile
  * - Extra £2 if pickup is more than 3 miles from office (PE13 1AU)
  */
-export function calculateFare(distanceMiles: number, pickupLat?: number, pickupLng?: number): number {
+export function calculateFare(distanceMiles: number, pickupLat?: number, pickupLng?: number, vehicle: VehicleType = "car"): number {
   if (distanceMiles <= 0) return 0;
 
-  const BASE_FARE = 5;
+  const BASE_FARE = VEHICLES[vehicle].baseFare;
   const BASE_MILES = 1.5;
   const MID_RATE = 2.3;
   const MID_LIMIT = 10;

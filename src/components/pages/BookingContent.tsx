@@ -8,7 +8,7 @@ import PageHero from "@/components/shared/PageHero";
 import AnimatedSection from "@/components/ui/AnimatedSection";
 import AddressInput from "@/components/booking/AddressInput";
 import FareResult from "@/components/booking/FareResult";
-import { calculateFare, metersToMiles, isOutsideOfficeRadius, SURCHARGE } from "@/lib/fare";
+import { calculateFare, metersToMiles, isOutsideOfficeRadius, SURCHARGE, VEHICLES, type VehicleType } from "@/lib/fare";
 
 interface PlaceData {
   address: string;
@@ -24,6 +24,7 @@ export default function BookingContent() {
   const [phone, setPhone] = useState("");
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
+  const [vehicle, setVehicle] = useState<VehicleType>("car");
   const [result, setResult] = useState<{ distance: number; fare: number } | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -89,7 +90,7 @@ export default function BookingContent() {
         }
         const meters = response.rows[0].elements[0].distance.value;
         const miles = metersToMiles(meters);
-        const fare = calculateFare(miles, pickup.lat, pickup.lng);
+        const fare = calculateFare(miles, pickup.lat, pickup.lng, vehicle);
         setResult({ distance: miles, fare });
       }
     );
@@ -184,6 +185,25 @@ export default function BookingContent() {
                   </div>
                 )}
 
+                {/* Vehicle Type */}
+                <div>
+                  <label className="block text-navy/70 text-sm font-medium mb-1.5">Vehicle Type</label>
+                  <div className="grid grid-cols-2 gap-3">
+                    {(Object.entries(VEHICLES) as [VehicleType, typeof VEHICLES.car][]).map(([key, v]) => (
+                      <button key={key} type="button"
+                        onClick={() => { setVehicle(key); setResult(null); }}
+                        className={`flex items-center justify-center gap-2 rounded-xl px-4 py-3.5 border text-sm font-medium transition-all cursor-pointer ${
+                          vehicle === key
+                            ? "bg-crimson/10 border-crimson/50 text-crimson"
+                            : "bg-white border-gray-200 text-navy/60 hover:border-crimson/30"
+                        }`}>
+                        <span>{v.label}</span>
+                        <span className="text-xs opacity-60">(Up to {v.passengers} passengers)</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
                 {/* Date & Time */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
@@ -243,6 +263,7 @@ export default function BookingContent() {
                   dropoff={dropoff.address}
                   distanceMiles={result.distance}
                   fare={result.fare}
+                  vehicle={VEHICLES[vehicle].label}
                   surcharge={isOutsideOfficeRadius(pickup.lat, pickup.lng)}
                   name={name}
                   phone={phone}

@@ -10,6 +10,7 @@ interface FareResultProps {
   dropoff: string;
   distanceMiles: number;
   fare: number;
+  vehicle?: string;
   surcharge?: boolean;
   name: string;
   phone: string;
@@ -19,7 +20,7 @@ interface FareResultProps {
 }
 
 export default function FareResult({
-  pickup, dropoff, distanceMiles, fare, surcharge, name, phone, date, time, onReset,
+  pickup, dropoff, distanceMiles, fare, vehicle, surcharge, name, phone, date, time, onReset,
 }: FareResultProps) {
   const ref = useRef<HTMLDivElement>(null);
   const [booked, setBooked] = useState(false);
@@ -80,6 +81,15 @@ export default function FareResult({
               <div className="text-sm font-medium">{distanceMiles.toFixed(1)} miles</div>
             </div>
           </div>
+          {vehicle && (
+            <div className="flex items-start gap-3">
+              <Route className="w-4 h-4 text-gold mt-0.5 shrink-0" />
+              <div>
+                <div className="text-white/50 text-xs">Vehicle</div>
+                <div className="text-sm font-medium">{vehicle}</div>
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="border-t border-white/10 pt-5 mb-5 flex items-end justify-between">
