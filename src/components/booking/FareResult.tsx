@@ -2,7 +2,7 @@
 
 import { useRef, useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { MapPin, Navigation, Route, PoundSterling, ArrowRight } from "lucide-react";
+import { MapPin, Navigation, Route, PoundSterling, ArrowRight, Banknote, CreditCard } from "lucide-react";
 import SuccessModal from "@/components/booking/SuccessModal";
 
 interface FareResultProps {
@@ -25,6 +25,7 @@ export default function FareResult({
   const ref = useRef<HTMLDivElement>(null);
   const [booked, setBooked] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState<"cash" | "card">("cash");
 
   useEffect(() => {
     ref.current?.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -33,14 +34,30 @@ export default function FareResult({
   const confirmBooking = async () => {
     setSaving(true);
     try {
-      await fetch("/api/bookings", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name, phone, pickup, dropoff, date, time,
-          distance: distanceMiles, fare, source: "booking-page",
-        }),
-      });
+      if (paymentMethod === "card") {
+        const res = await fetch("/api/stripe/checkout", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name, phone, pickup, dropoff, date, time,
+            distance: distanceMiles, fare, vehicle, source: "booking-page",
+          }),
+        });
+        const data = await res.json();
+        if (data.url) {
+          window.location.href = data.url;
+          return;
+        }
+      } else {
+        await fetch("/api/bookings", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name, phone, pickup, dropoff, date, time,
+            distance: distanceMiles, fare, paymentMethod: "cash", source: "booking-page",
+          }),
+        });
+      }
     } catch {}
     setSaving(false);
     setBooked(true);
@@ -109,6 +126,29 @@ export default function FareResult({
           </div>
         </div>
 
+        {/* Payment Method */}
+        <div className="mb-5">
+          <p className="text-white/50 text-xs mb-2">Payment Method</p>
+          <div className="grid grid-cols-2 gap-3">
+            <button type="button" onClick={() => setPaymentMethod("cash")}
+              className={`flex items-center justify-center gap-2 rounded-xl px-4 py-3.5 border text-sm font-medium transition-all cursor-pointer ${
+                paymentMethod === "cash"
+                  ? "bg-gold/20 border-gold/50 text-gold"
+                  : "bg-white/10 border-white/10 text-white/60 hover:border-white/25"
+              }`}>
+              <Banknote className="w-4 h-4" /> Cash
+            </button>
+            <button type="button" onClick={() => setPaymentMethod("card")}
+              className={`flex items-center justify-center gap-2 rounded-xl px-4 py-3.5 border text-sm font-medium transition-all cursor-pointer ${
+                paymentMethod === "card"
+                  ? "bg-gold/20 border-gold/50 text-gold"
+                  : "bg-white/10 border-white/10 text-white/60 hover:border-white/25"
+              }`}>
+              <CreditCard className="w-4 h-4" /> Card
+            </button>
+          </div>
+        </div>
+
         <motion.button
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
@@ -116,7 +156,8 @@ export default function FareResult({
           disabled={saving}
           className="w-full py-4 rounded-xl bg-gradient-to-r from-green-500 to-green-600 text-white font-bold text-sm flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-green-500/20 disabled:opacity-60"
         >
-          {saving ? "Saving..." : "Confirm Booking"} {!saving && <ArrowRight className="w-4 h-4" />}
+          {saving ? (paymentMethod === "card" ? "Redirecting to payment..." : "Saving...") : (paymentMethod === "card" ? "Pay with Card" : "Confirm Booking")}
+          {!saving && <ArrowRight className="w-4 h-4" />}
         </motion.button>
       </motion.div>
 
