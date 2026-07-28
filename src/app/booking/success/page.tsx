@@ -12,9 +12,8 @@ function SuccessContent() {
 
   useEffect(() => {
     const sessionId = params.get("session_id");
-    const bookingId = params.get("booking_id");
 
-    if (!sessionId || !bookingId) {
+    if (!sessionId) {
       setStatus("failed");
       return;
     }
@@ -22,7 +21,7 @@ function SuccessContent() {
     fetch("/api/stripe/confirm", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ sessionId, bookingId }),
+      body: JSON.stringify({ sessionId }),
     })
       .then((r) => r.json())
       .then((d) => setStatus(d.success ? "paid" : "failed"))

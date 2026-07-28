@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
-import { prisma } from "@/lib/prisma";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
@@ -13,21 +12,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
-    // Create booking first with pending payment
-    const booking = await prisma.booking.create({
-      data: {
-        name, phone, pickup, dropoff, date, time,
-        distance: parseFloat(distance) || 0,
-        fare: parseFloat(fare) || 0,
-        vehicle: vehicle || "car",
-        source: source || "website",
-        status: "pending",
-        paymentMethod: "card",
-        paymentStatus: "pending",
-      },
-    });
-
-    // Create Stripe checkout session
     const origin = req.headers.get("origin") || "https://shinecars.co.uk";
 
     const session = await stripe.checkout.sessions.create({
@@ -46,15 +30,18 @@ export async function POST(req: NextRequest) {
         },
       ],
       mode: "payment",
-      success_url: `${origin}/booking/success?session_id={CHECKOUT_SESSION_ID}&booking_id=${booking.id}`,
+      success_url: `${origin}/booking/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/booking?cancelled=true`,
       metadata: {
-        bookingId: booking.id,
+        name, phone, pickup, dropoff, date, time,
+        distance: String(distance),
+        fare: String(fare),
+        vehicle: vehicle || "car",
+        source: source || "website",
       },
-      customer_email: undefined,
     });
 
-    return NextResponse.json({ url: session.url, bookingId: booking.id });
+    return NextResponse.json({ url: session.url });
   } catch (error) {
     console.error("Stripe checkout error:", error);
     return NextResponse.json({ error: "Failed to create checkout session" }, { status: 500 });
