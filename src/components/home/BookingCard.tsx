@@ -3,15 +3,14 @@
 import { useState } from "react";
 import Script from "next/script";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  ArrowRight, MapPin, Navigation, Route, PoundSterling,
-  User, Phone, Calendar, Clock, Banknote, CreditCard,
-} from "lucide-react";
+import { ArrowRight, MapPin, Navigation, User, Phone, Calendar, Clock } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { calculateFare, metersToMiles, isOutsideOfficeRadius, SURCHARGE, VEHICLES, type VehicleType } from "@/lib/fare";
+import { calculateFare, metersToMiles, VEHICLES, type VehicleType } from "@/lib/fare";
 import { useAuth } from "@/context/AuthContext";
 import SuccessModal from "@/components/booking/SuccessModal";
 import HeroAddressInput from "@/components/home/HeroAddressInput";
+import BookingFareResult from "@/components/home/BookingFareResult";
+import { confirmBooking } from "@/components/home/bookingCardActions";
 
 interface PlaceData { address: string; lat: number; lng: number }
 
@@ -33,38 +32,12 @@ export default function BookingCard() {
   const [saving, setSaving] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<"cash" | "card">("cash");
 
-  const confirmBooking = async () => {
+  const handleConfirm = async () => {
     if (!result || !pickup || !dropoff) return;
     setSaving(true);
-    try {
-      if (paymentMethod === "card") {
-        const res = await fetch("/api/stripe/checkout", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            name, phone, pickup: pickup.address, dropoff: dropoff.address,
-            date, time, distance: result.distance, fare: result.fare, vehicle, source: "homepage",
-          }),
-        });
-        const data = await res.json();
-        if (data.url) {
-          window.location.href = data.url;
-          return;
-        }
-      } else {
-        await fetch("/api/bookings", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            name, phone, pickup: pickup.address, dropoff: dropoff.address,
-            date, time, distance: result.distance, fare: result.fare, vehicle,
-            paymentMethod: "cash", source: "homepage",
-          }),
-        });
-      }
-    } catch {}
+    const done = await confirmBooking({ result, pickup, dropoff, name, phone, date, time, vehicle, paymentMethod });
     setSaving(false);
-    setBooked(true);
+    if (done) setBooked(true);
   };
 
   const getQuote = () => {
@@ -179,51 +152,17 @@ export default function BookingCard() {
         </motion.button>
 
         <AnimatePresence>
-          {result && (
+          {result && pickup && (
             <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
-              <div className="mt-4 pt-4 border-t border-white/10 space-y-2">
-                <div className="flex items-center gap-2 text-white/60 text-xs">
-                  <Route className="w-3.5 h-3.5 text-gold" /> {result.distance.toFixed(1)} miles
-                </div>
-                {pickup && isOutsideOfficeRadius(pickup.lat, pickup.lng) && (
-                  <div className="text-yellow-400/80 text-xs">
-                    +£{SURCHARGE.toFixed(2)} out-of-area surcharge applied
-                  </div>
-                )}
-                <div className="flex items-center gap-2 mb-3">
-                  <PoundSterling className="w-5 h-5 text-gold" />
-                  <span className="text-3xl font-extrabold gradient-text">
-                    &pound;{result.fare.toFixed(2)}
-                  </span>
-                </div>
-                {/* Payment Method */}
-                <div className="grid grid-cols-2 gap-2 mb-3">
-                  <button type="button" onClick={() => setPaymentMethod("cash")}
-                    className={`flex items-center justify-center gap-2 rounded-xl px-3 py-2.5 border text-xs font-medium transition-all cursor-pointer ${
-                      paymentMethod === "cash"
-                        ? "bg-gold/20 border-gold/50 text-gold"
-                        : "bg-white/10 border-white/10 text-white/60 hover:border-white/25"
-                    }`}>
-                    <Banknote className="w-3.5 h-3.5" /> Cash
-                  </button>
-                  <button type="button" onClick={() => setPaymentMethod("card")}
-                    className={`flex items-center justify-center gap-2 rounded-xl px-3 py-2.5 border text-xs font-medium transition-all cursor-pointer ${
-                      paymentMethod === "card"
-                        ? "bg-gold/20 border-gold/50 text-gold"
-                        : "bg-white/10 border-white/10 text-white/60 hover:border-white/25"
-                    }`}>
-                    <CreditCard className="w-3.5 h-3.5" /> Card
-                  </button>
-                </div>
-
-                <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
-                  onClick={confirmBooking} disabled={saving}
-                  className="w-full py-3 rounded-xl bg-gradient-to-r from-green-500 to-green-600 text-white font-bold text-sm flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60">
-                  {saving ? (paymentMethod === "card" ? "Redirecting..." : "Saving...") : (paymentMethod === "card" ? "Pay with Card" : "Confirm Booking")}
-                  {!saving && <ArrowRight className="w-4 h-4" />}
-                </motion.button>
-              </div>
+              <BookingFareResult
+                result={result}
+                pickup={pickup}
+                paymentMethod={paymentMethod}
+                onPaymentMethodChange={setPaymentMethod}
+                onConfirm={handleConfirm}
+                saving={saving}
+              />
             </motion.div>
           )}
         </AnimatePresence>

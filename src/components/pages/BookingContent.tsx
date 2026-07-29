@@ -2,13 +2,11 @@
 
 import { useState, useCallback } from "react";
 import Script from "next/script";
-import { motion } from "framer-motion";
-import { MapPin, Navigation, User, Phone, Calendar, Clock, ArrowRight } from "lucide-react";
 import PageHero from "@/components/shared/PageHero";
 import AnimatedSection from "@/components/ui/AnimatedSection";
-import AddressInput from "@/components/booking/AddressInput";
 import FareResult from "@/components/booking/FareResult";
-import { calculateFare, metersToMiles, isOutsideOfficeRadius, SURCHARGE, VEHICLES, type VehicleType } from "@/lib/fare";
+import BookingFormFields from "@/components/pages/BookingFormFields";
+import { calculateFare, metersToMiles, isOutsideOfficeRadius, VEHICLES, type VehicleType } from "@/lib/fare";
 
 interface PlaceData {
   address: string;
@@ -30,12 +28,12 @@ export default function BookingContent() {
   const [error, setError] = useState("");
 
   const buildAddress = (place: google.maps.places.PlaceResult) => {
-    const name = place.name || "";
+    const placeName = place.name || "";
     const formatted = place.formatted_address || "";
-    if (name && formatted && !formatted.toLowerCase().includes(name.toLowerCase())) {
-      return `${name}, ${formatted}`;
+    if (placeName && formatted && !formatted.toLowerCase().includes(placeName.toLowerCase())) {
+      return `${placeName}, ${formatted}`;
     }
-    return formatted || name;
+    return formatted || placeName;
   };
 
   const handlePickup = useCallback((place: google.maps.places.PlaceResult) => {
@@ -90,8 +88,7 @@ export default function BookingContent() {
         }
         const meters = response.rows[0].elements[0].distance.value;
         const miles = metersToMiles(meters);
-        const fare = calculateFare(miles, pickup.lat, pickup.lng, vehicle);
-        setResult({ distance: miles, fare });
+        setResult({ distance: miles, fare: calculateFare(miles, pickup.lat, pickup.lng, vehicle) });
       }
     );
   };
@@ -122,141 +119,25 @@ export default function BookingContent() {
                 Enter your details below for an estimated fare.
               </p>
 
-              <div className="space-y-4">
-                {/* Name & Phone */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label htmlFor="book-name" className="block text-navy/70 text-sm font-medium mb-1.5">
-                      Full Name
-                    </label>
-                    <div className="flex items-center gap-3 bg-white rounded-xl px-4 py-3.5 border border-gray-200 focus-within:border-crimson/50 transition-colors">
-                      <User className="w-4 h-4 text-navy/30 shrink-0" />
-                      <input
-                        id="book-name"
-                        type="text"
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        placeholder="John Smith"
-                        className="bg-transparent text-navy text-sm outline-none w-full placeholder:text-navy/35"
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <label htmlFor="book-phone" className="block text-navy/70 text-sm font-medium mb-1.5">
-                      Phone Number
-                    </label>
-                    <div className="flex items-center gap-3 bg-white rounded-xl px-4 py-3.5 border border-gray-200 focus-within:border-crimson/50 transition-colors">
-                      <Phone className="w-4 h-4 text-navy/30 shrink-0" />
-                      <input
-                        id="book-phone"
-                        type="tel"
-                        value={phone}
-                        onChange={(e) => setPhone(e.target.value)}
-                        placeholder="+44 7XXX XXXXXX"
-                        className="bg-transparent text-navy text-sm outline-none w-full placeholder:text-navy/35"
-                      />
-                    </div>
-                  </div>
-                </div>
+              <BookingFormFields
+                name={name}
+                phone={phone}
+                date={date}
+                time={time}
+                vehicle={vehicle}
+                error={error}
+                loading={loading}
+                mapsLoaded={mapsLoaded}
+                onNameChange={setName}
+                onPhoneChange={setPhone}
+                onDateChange={setDate}
+                onTimeChange={setTime}
+                onVehicleChange={(v) => { setVehicle(v); setResult(null); }}
+                onPickup={handlePickup}
+                onDropoff={handleDropoff}
+                onSubmit={getQuote}
+              />
 
-                {/* Pickup & Dropoff */}
-                {mapsLoaded && (
-                  <>
-                    <AddressInput
-                      id="book-pickup"
-                      label="Pickup Address"
-                      placeholder="Enter pickup location"
-                      icon={<MapPin className="w-4 h-4 text-green-500" />}
-                      onPlaceSelect={handlePickup}
-                    />
-                    <AddressInput
-                      id="book-dropoff"
-                      label="Drop-off Location"
-                      placeholder="Enter drop-off location"
-                      icon={<Navigation className="w-4 h-4 text-crimson" />}
-                      onPlaceSelect={handleDropoff}
-                    />
-                  </>
-                )}
-
-                {!mapsLoaded && (
-                  <div className="text-center text-navy/40 text-sm py-4">
-                    Loading address search...
-                  </div>
-                )}
-
-                {/* Vehicle Type */}
-                <div>
-                  <label className="block text-navy/70 text-sm font-medium mb-1.5">Vehicle Type</label>
-                  <div className="grid grid-cols-2 gap-3">
-                    {(Object.entries(VEHICLES) as [VehicleType, typeof VEHICLES.car][]).map(([key, v]) => (
-                      <button key={key} type="button"
-                        onClick={() => { setVehicle(key); setResult(null); }}
-                        className={`flex items-center justify-center gap-2 rounded-xl px-4 py-3.5 border text-sm font-medium transition-all cursor-pointer ${
-                          vehicle === key
-                            ? "bg-crimson/10 border-crimson/50 text-crimson"
-                            : "bg-white border-gray-200 text-navy/60 hover:border-crimson/30"
-                        }`}>
-                        <span>{v.label}</span>
-                        <span className="text-xs opacity-60">(Up to {v.passengers} passengers)</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Date & Time */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label htmlFor="book-date" className="block text-navy/70 text-sm font-medium mb-1.5">
-                      Date
-                    </label>
-                    <div className="flex items-center gap-3 bg-white rounded-xl px-4 py-3.5 border border-gray-200 focus-within:border-crimson/50 transition-colors">
-                      <Calendar className="w-4 h-4 text-navy/30 shrink-0" />
-                      <input
-                        id="book-date"
-                        type="date"
-                        value={date}
-                        onChange={(e) => setDate(e.target.value)}
-                        min={new Date().toISOString().split("T")[0]}
-                        className="bg-transparent text-navy text-sm outline-none w-full"
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <label htmlFor="book-time" className="block text-navy/70 text-sm font-medium mb-1.5">
-                      Time
-                    </label>
-                    <div className="flex items-center gap-3 bg-white rounded-xl px-4 py-3.5 border border-gray-200 focus-within:border-crimson/50 transition-colors">
-                      <Clock className="w-4 h-4 text-navy/30 shrink-0" />
-                      <input
-                        id="book-time"
-                        type="time"
-                        value={time}
-                        onChange={(e) => setTime(e.target.value)}
-                        className="bg-transparent text-navy text-sm outline-none w-full"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {error && (
-                  <p className="text-crimson text-sm font-medium">{error}</p>
-                )}
-
-                {/* Submit */}
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={getQuote}
-                  disabled={loading}
-                  className="w-full py-4 rounded-xl bg-gradient-to-r from-crimson to-crimson-dark text-white font-bold text-sm flex items-center justify-center gap-2 shadow-lg shadow-crimson/20 cursor-pointer disabled:opacity-60"
-                >
-                  {loading ? "Calculating..." : "Get Instant Quote"}
-                  {!loading && <ArrowRight className="w-4 h-4" />}
-                </motion.button>
-              </div>
-
-              {/* Fare Result */}
               {result && pickup && dropoff && (
                 <FareResult
                   pickup={pickup.address}
