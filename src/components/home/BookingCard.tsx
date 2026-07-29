@@ -7,13 +7,17 @@ import {
   ArrowRight, MapPin, Navigation, Route, PoundSterling,
   User, Phone, Calendar, Clock, Banknote, CreditCard,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { calculateFare, metersToMiles, isOutsideOfficeRadius, SURCHARGE, VEHICLES, type VehicleType } from "@/lib/fare";
+import { useAuth } from "@/context/AuthContext";
 import SuccessModal from "@/components/booking/SuccessModal";
 import HeroAddressInput from "@/components/home/HeroAddressInput";
 
 interface PlaceData { address: string; lat: number; lng: number }
 
 export default function BookingCard() {
+  const router = useRouter();
+  const { customer } = useAuth();
   const [mapsLoaded, setMapsLoaded] = useState(() => typeof window !== "undefined" && !!window.google?.maps?.places);
   const [pickup, setPickup] = useState<PlaceData | null>(null);
   const [dropoff, setDropoff] = useState<PlaceData | null>(null);
@@ -64,6 +68,7 @@ export default function BookingCard() {
   };
 
   const getQuote = () => {
+    if (!customer) { router.push("/login?redirect=/booking"); return; }
     if (!name.trim() || !phone.trim()) { setError("Enter name & phone"); return; }
     if (!pickup || !dropoff) { setError("Select both locations"); return; }
     if (!date || !time) { setError("Select date & time"); return; }

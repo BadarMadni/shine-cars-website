@@ -48,3 +48,7 @@ public/images/hero-car-old.jpg
 public/images/hero-car.webp
 
 /src/generated/prisma
+.agents/
+.windsurf/
+skills-lock.json
+.claude/skills/

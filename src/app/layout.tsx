@@ -3,6 +3,7 @@ import { Outfit, Manrope } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
+import { AuthProvider } from "@/context/AuthContext";
 
 const outfit = Outfit({
   variable: "--font-outfit",
@@ -41,9 +42,11 @@ export default function RootLayout({
         className="min-h-screen flex flex-col antialiased"
         style={{ fontFamily: "var(--font-outfit), sans-serif" }}
       >
-        <Navbar />
-        <main className="flex-1">{children}</main>
-        <Footer />
+        <AuthProvider>
+          <Navbar />
+          <main className="flex-1">{children}</main>
+          <Footer />
+        </AuthProvider>
       </body>
     </html>
   );
