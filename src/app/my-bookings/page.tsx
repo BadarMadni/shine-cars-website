@@ -19,6 +19,7 @@ interface Booking {
   paymentMethod: string;
   paymentStatus: string;
   createdAt: string;
+  driver?: { name: string; phone: string } | null;
 }
 
 interface StatusUpdate {

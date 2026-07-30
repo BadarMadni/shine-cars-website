@@ -20,6 +20,7 @@ interface Booking {
   paymentMethod: string;
   paymentStatus: string;
   createdAt: string;
+  driver?: { name: string; phone: string } | null;
 }
 
 const STATUS_STYLES: Record<string, { bg: string; dot: string }> = {
@@ -210,22 +211,48 @@ function BookingCard({ booking: b, index, expanded, onToggle }: {
           <span className="flex items-center gap-1">
             <MapPin className="w-3 h-3" /> {b.distance.toFixed(0)} mi
           </span>
+          {b.driver && (
+            <span className="flex items-center gap-1 text-purple-400/70">
+              <Car className="w-3 h-3" /> {b.driver.name}
+            </span>
+          )}
         </div>
         <div className="flex items-center gap-2 w-full sm:w-auto" onClick={(e) => e.stopPropagation()}>
-          <a href="tel:+441945243006"
-            className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 pl-2 pr-3 py-2 sm:py-1.5 rounded-full bg-gradient-to-r from-blue-500/20 to-blue-600/10 border border-blue-400/25 text-blue-300 text-xs font-semibold hover:from-blue-500/30 hover:to-blue-600/20 hover:shadow-lg hover:shadow-blue-500/10 transition-all">
-            <span className="w-5 h-5 rounded-full bg-blue-500/30 flex items-center justify-center">
-              <Phone className="w-2.5 h-2.5" />
-            </span>
-            Call Us
-          </a>
-          <a href="https://wa.me/441945243006" target="_blank" rel="noopener noreferrer"
-            className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 pl-2 pr-3 py-2 sm:py-1.5 rounded-full bg-gradient-to-r from-green-500/20 to-emerald-600/10 border border-green-400/25 text-green-300 text-xs font-semibold hover:from-green-500/30 hover:to-emerald-600/20 hover:shadow-lg hover:shadow-green-500/10 transition-all">
-            <span className="w-5 h-5 rounded-full bg-green-500/30 flex items-center justify-center">
-              <MessageCircle className="w-2.5 h-2.5" />
-            </span>
-            WhatsApp
-          </a>
+          {b.driver ? (
+            <>
+              <a href={`tel:${b.driver.phone}`}
+                className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 pl-2 pr-3 py-2 sm:py-1.5 rounded-full bg-gradient-to-r from-purple-500/20 to-purple-600/10 border border-purple-400/25 text-purple-300 text-xs font-semibold hover:from-purple-500/30 hover:to-purple-600/20 hover:shadow-lg hover:shadow-purple-500/10 transition-all">
+                <span className="w-5 h-5 rounded-full bg-purple-500/30 flex items-center justify-center">
+                  <Phone className="w-2.5 h-2.5" />
+                </span>
+                Call Driver
+              </a>
+              <a href={`https://wa.me/${b.driver.phone.replace(/[^0-9]/g, "")}`} target="_blank" rel="noopener noreferrer"
+                className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 pl-2 pr-3 py-2 sm:py-1.5 rounded-full bg-gradient-to-r from-green-500/20 to-emerald-600/10 border border-green-400/25 text-green-300 text-xs font-semibold hover:from-green-500/30 hover:to-emerald-600/20 hover:shadow-lg hover:shadow-green-500/10 transition-all">
+                <span className="w-5 h-5 rounded-full bg-green-500/30 flex items-center justify-center">
+                  <MessageCircle className="w-2.5 h-2.5" />
+                </span>
+                WhatsApp Driver
+              </a>
+            </>
+          ) : (
+            <>
+              <a href="tel:+441945243006"
+                className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 pl-2 pr-3 py-2 sm:py-1.5 rounded-full bg-gradient-to-r from-blue-500/20 to-blue-600/10 border border-blue-400/25 text-blue-300 text-xs font-semibold hover:from-blue-500/30 hover:to-blue-600/20 hover:shadow-lg hover:shadow-blue-500/10 transition-all">
+                <span className="w-5 h-5 rounded-full bg-blue-500/30 flex items-center justify-center">
+                  <Phone className="w-2.5 h-2.5" />
+                </span>
+                Call Us
+              </a>
+              <a href="https://wa.me/441945243006" target="_blank" rel="noopener noreferrer"
+                className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 pl-2 pr-3 py-2 sm:py-1.5 rounded-full bg-gradient-to-r from-green-500/20 to-emerald-600/10 border border-green-400/25 text-green-300 text-xs font-semibold hover:from-green-500/30 hover:to-emerald-600/20 hover:shadow-lg hover:shadow-green-500/10 transition-all">
+                <span className="w-5 h-5 rounded-full bg-green-500/30 flex items-center justify-center">
+                  <MessageCircle className="w-2.5 h-2.5" />
+                </span>
+                WhatsApp
+              </a>
+            </>
+          )}
         </div>
       </div>
     </motion.div>
