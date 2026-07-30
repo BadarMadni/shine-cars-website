@@ -1,8 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import Stripe from "stripe";
 import { prisma } from "@/lib/prisma";
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
 export async function POST(req: NextRequest) {
   try {
@@ -12,7 +9,11 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Missing session ID" }, { status: 400 });
     }
 
-    const session = await stripe.checkout.sessions.retrieve(sessionId);
+    const key = process.env.STRIPE_SECRET_KEY!;
+    const res = await fetch(`https://api.stripe.com/v1/checkout/sessions/${sessionId}`, {
+      headers: { "Authorization": `Bearer ${key}` },
+    });
+    const session = await res.json();
 
     if (session.payment_status !== "paid") {
       return NextResponse.json({ success: false, status: session.payment_status });
