@@ -3,7 +3,8 @@
 import AuthGuard from "@/components/auth/AuthGuard";
 import BookingsHeader from "@/components/bookings/BookingsHeader";
 import BookingsList from "@/components/bookings/BookingsList";
-import { useState, useEffect } from "react";
+import StatusNotification from "@/components/bookings/StatusNotification";
+import { useState, useEffect, useRef, useCallback } from "react";
 
 interface Booking {
   id: string;
@@ -20,17 +21,58 @@ interface Booking {
   createdAt: string;
 }
 
+interface StatusUpdate {
+  bookingId: string;
+  pickup: string;
+  dropoff: string;
+  oldStatus: string;
+  newStatus: string;
+}
+
 export default function MyBookingsPage() {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
+  const [statusUpdate, setStatusUpdate] = useState<StatusUpdate | null>(null);
+  const prevStatuses = useRef<Record<string, string>>({});
+
+  const fetchBookings = useCallback(async (isInitial = false) => {
+    try {
+      const res = await fetch("/api/my-bookings");
+      const data = await res.json();
+      const newBookings: Booking[] = data.bookings || [];
+
+      // Detect status changes (skip on first load)
+      if (!isInitial && Object.keys(prevStatuses.current).length > 0) {
+        for (const b of newBookings) {
+          const oldStatus = prevStatuses.current[b.id];
+          if (oldStatus && oldStatus !== b.status) {
+            setStatusUpdate({
+              bookingId: b.id,
+              pickup: b.pickup,
+              dropoff: b.dropoff,
+              oldStatus,
+              newStatus: b.status,
+            });
+            break; // show one at a time
+          }
+        }
+      }
+
+      // Update status map
+      const map: Record<string, string> = {};
+      for (const b of newBookings) map[b.id] = b.status;
+      prevStatuses.current = map;
+
+      setBookings(newBookings);
+    } catch {}
+    if (isInitial) setLoading(false);
+  }, []);
 
   useEffect(() => {
-    fetch("/api/my-bookings")
-      .then((r) => r.json())
-      .then((d) => setBookings(d.bookings || []))
-      .catch(() => {})
-      .finally(() => setLoading(false));
-  }, []);
+    fetchBookings(true);
+    const iv = setInterval(() => fetchBookings(false), 10000);
+    return () => clearInterval(iv);
+  }, [fetchBookings]);
 
   return (
     <AuthGuard redirectTo="/my-bookings">
@@ -40,6 +82,7 @@ export default function MyBookingsPage() {
           <BookingsList bookings={bookings} loading={loading} />
         </div>
       </main>
+      <StatusNotification update={statusUpdate} onClose={() => setStatusUpdate(null)} />
     </AuthGuard>
   );
 }
