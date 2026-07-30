@@ -48,19 +48,22 @@ export default function FareResult({
           window.location.href = data.url;
           return;
         }
-      } else {
-        await fetch("/api/bookings", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            name, phone, pickup, dropoff, date, time,
-            distance: distanceMiles, fare, paymentMethod: "cash", source: "booking-page",
-          }),
-        });
+        setSaving(false);
+        return;
       }
-    } catch {}
-    setSaving(false);
-    setBooked(true);
+      await fetch("/api/bookings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name, phone, pickup, dropoff, date, time,
+          distance: distanceMiles, fare, paymentMethod: "cash", source: "booking-page",
+        }),
+      });
+      setSaving(false);
+      setBooked(true);
+    } catch {
+      setSaving(false);
+    }
   };
 
   return (

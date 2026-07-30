@@ -29,19 +29,20 @@ export async function confirmBooking(params: ConfirmBookingParams): Promise<bool
         }),
       });
       const data = await res.json();
-      if (data.url) { window.location.href = data.url; return false; }
-    } else {
-      await fetch("/api/bookings", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name, phone, pickup: pickup.address, dropoff: dropoff.address,
-          date, time, distance: result.distance, fare: result.fare, vehicle,
-          paymentMethod: "cash", source: "homepage",
-        }),
-      });
+      if (data.url) { window.location.href = data.url; }
+      return false;
     }
-  } catch {}
-
-  return true;
+    await fetch("/api/bookings", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name, phone, pickup: pickup.address, dropoff: dropoff.address,
+        date, time, distance: result.distance, fare: result.fare, vehicle,
+        paymentMethod: "cash", source: "homepage",
+      }),
+    });
+    return true;
+  } catch {
+    return false;
+  }
 }
