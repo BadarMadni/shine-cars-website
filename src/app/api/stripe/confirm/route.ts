@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
         fare: parseFloat(m.fare!) || 0,
         vehicle: m.vehicle || "car",
         source: m.source || "website",
-        status: "confirmed",
+        status: "pending",
         paymentMethod: "card",
         paymentStatus: "paid",
         notes: `stripe:${sessionId}`,
