@@ -8,26 +8,29 @@ datasource db {
 }
 
 model Booking {
-  id        String   @id @default(cuid())
-  name      String
-  phone     String
-  pickup    String
-  dropoff   String
-  date      String
-  time      String
-  distance  Float
-  fare      Float
+  id            String   @id @default(cuid())
+  name          String
+  phone         String
+  pickup        String
+  dropoff       String
+  date          String
+  time          String
+  distance      Float
+  fare          Float
   vehicle       String   @default("car")
   status        String   @default("pending")
   source        String   @default("website")
   paymentMethod String   @default("cash")
   paymentStatus String   @default("unpaid")
-  notes     String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  customerId    String?
+  notes         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  customer      Customer? @relation(fields: [customerId], references: [id])
 
   @@index([status])
   @@index([createdAt])
+  @@index([customerId])
 }
 
 model Operator {
@@ -40,14 +43,15 @@ model Operator {
 }
 
 model Customer {
-  id          String   @id @default(cuid())
+  id          String    @id @default(cuid())
   name        String
-  email       String   @unique
+  email       String    @unique
   phone       String
   password    String
-  accountType String   @default("individual")
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  accountType String    @default("individual")
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  bookings    Booking[]
 
   @@index([accountType])
 }

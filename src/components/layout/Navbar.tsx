@@ -57,6 +57,10 @@ export default function Navbar() {
 
             {!loading && customer ? (
               <div className="flex items-center gap-3">
+                <Link href="/my-bookings"
+                  className="text-white/80 hover:text-gold font-medium transition-colors text-sm">
+                  My Bookings
+                </Link>
                 <div className="flex items-center gap-2 text-white/80 text-sm">
                   <UserCircle className="w-5 h-5 text-gold" />
                   <span className="font-medium max-w-[120px] truncate">{customer.name}</span>
@@ -122,6 +126,10 @@ export default function Navbar() {
                       <span>{customer.name}</span>
                       <span className="text-white/30 text-xs">({customer.accountType})</span>
                     </div>
+                    <Link href="/my-bookings" onClick={() => setIsOpen(false)}
+                      className="block text-center text-white/80 hover:text-gold py-3 font-medium">
+                      My Bookings
+                    </Link>
                     <Link href="/booking" onClick={() => setIsOpen(false)}
                       className="block text-center bg-gradient-to-r from-crimson to-crimson-dark text-white py-3 rounded-full font-semibold">
                       Book Now

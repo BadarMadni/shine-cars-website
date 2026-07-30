@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { verifyToken, COOKIE_NAME } from "@/lib/auth";
 
 export async function POST(req: NextRequest) {
   try {
@@ -8,6 +9,13 @@ export async function POST(req: NextRequest) {
 
     if (!name || !phone || !pickup || !dropoff || !date || !time) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+    }
+
+    let customerId: string | undefined;
+    const token = req.cookies.get(COOKIE_NAME)?.value;
+    if (token) {
+      const payload = verifyToken(token);
+      if (payload) customerId = payload.id;
     }
 
     const booking = await prisma.booking.create({
@@ -20,6 +28,7 @@ export async function POST(req: NextRequest) {
         status: "pending",
         paymentMethod: paymentMethod || "cash",
         paymentStatus: paymentMethod === "card" ? "pending" : "unpaid",
+        customerId,
       },
     });
 

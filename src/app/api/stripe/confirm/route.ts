@@ -45,6 +45,7 @@ export async function POST(req: NextRequest) {
         status: "pending",
         paymentMethod: "card",
         paymentStatus: "paid",
+        customerId: m.customerId || undefined,
         notes: `stripe:${sessionId}`,
       },
     });

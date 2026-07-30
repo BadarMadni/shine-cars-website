@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { verifyToken, COOKIE_NAME } from "@/lib/auth";
 
 export async function POST(req: NextRequest) {
   try {
@@ -32,6 +33,12 @@ export async function POST(req: NextRequest) {
     params.append("metadata[fare]", String(fare));
     params.append("metadata[vehicle]", vehicle || "car");
     params.append("metadata[source]", source || "website");
+
+    const token = req.cookies.get(COOKIE_NAME)?.value;
+    if (token) {
+      const payload = verifyToken(token);
+      if (payload) params.append("metadata[customerId]", payload.id);
+    }
 
     const res = await fetch("https://api.stripe.com/v1/checkout/sessions", {
       method: "POST",
