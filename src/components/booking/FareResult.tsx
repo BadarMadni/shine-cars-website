@@ -8,6 +8,7 @@ import SuccessModal from "@/components/booking/SuccessModal";
 interface FareResultProps {
   pickup: string;
   dropoff: string;
+  stops?: string[];
   distanceMiles: number;
   fare: number;
   vehicle?: string;
@@ -20,7 +21,7 @@ interface FareResultProps {
 }
 
 export default function FareResult({
-  pickup, dropoff, distanceMiles, fare, vehicle, surcharge, name, phone, date, time, onReset,
+  pickup, dropoff, stops = [], distanceMiles, fare, vehicle, surcharge, name, phone, date, time, onReset,
 }: FareResultProps) {
   const ref = useRef<HTMLDivElement>(null);
   const [booked, setBooked] = useState(false);
@@ -39,7 +40,7 @@ export default function FareResult({
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            name, phone, pickup, dropoff, date, time,
+            name, phone, pickup, dropoff, stops, date, time,
             distance: distanceMiles, fare, vehicle, source: "booking-page",
           }),
         });
@@ -55,7 +56,7 @@ export default function FareResult({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          name, phone, pickup, dropoff, date, time,
+          name, phone, pickup, dropoff, stops, date, time,
           distance: distanceMiles, fare, paymentMethod: "cash", source: "booking-page",
         }),
       });
@@ -87,6 +88,15 @@ export default function FareResult({
               <div className="text-sm font-medium">{pickup}</div>
             </div>
           </div>
+          {stops.map((s, i) => (
+            <div key={i} className="flex items-start gap-3">
+              <MapPin className="w-4 h-4 text-amber-400 mt-0.5 shrink-0" />
+              <div>
+                <div className="text-white/50 text-xs">Stop {i + 1}</div>
+                <div className="text-sm font-medium">{s}</div>
+              </div>
+            </div>
+          ))}
           <div className="flex items-start gap-3">
             <Navigation className="w-4 h-4 text-crimson mt-0.5 shrink-0" />
             <div>

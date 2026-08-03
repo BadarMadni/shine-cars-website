@@ -4,7 +4,7 @@ import { verifyToken, COOKIE_NAME } from "@/lib/auth";
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { name, phone, pickup, dropoff, date, time, distance, fare, vehicle, source } = body;
+    const { name, phone, pickup, dropoff, stops, date, time, distance, fare, vehicle, source } = body;
 
     if (!name || !phone || !pickup || !dropoff || !date || !time || !fare) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
@@ -18,7 +18,8 @@ export async function POST(req: NextRequest) {
     params.append("payment_method_types[0]", "card");
     params.append("line_items[0][price_data][currency]", "gbp");
     params.append("line_items[0][price_data][product_data][name]", `Taxi Ride — ${vehicle === "mpv" ? "MPV" : "Car"}`);
-    params.append("line_items[0][price_data][product_data][description]", `${pickup} → ${dropoff} on ${date} at ${time}`);
+    const routeDesc = stops?.length ? `${pickup} → ${stops.join(" → ")} → ${dropoff}` : `${pickup} → ${dropoff}`;
+    params.append("line_items[0][price_data][product_data][description]", `${routeDesc} on ${date} at ${time}`);
     params.append("line_items[0][price_data][unit_amount]", String(Math.round(parseFloat(fare) * 100)));
     params.append("line_items[0][quantity]", "1");
     params.append("success_url", `${origin}/booking/success?session_id={CHECKOUT_SESSION_ID}`);
@@ -33,6 +34,7 @@ export async function POST(req: NextRequest) {
     params.append("metadata[fare]", String(fare));
     params.append("metadata[vehicle]", vehicle || "car");
     params.append("metadata[source]", source || "website");
+    if (stops?.length) params.append("metadata[stops]", JSON.stringify(stops));
 
     const token = req.cookies.get(COOKIE_NAME)?.value;
     if (token) {

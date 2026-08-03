@@ -24,6 +24,7 @@ model Booking {
   paymentStatus String   @default("unpaid")
   customerId    String?
   driverId      String?
+  stops         String?
   notes         String?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt

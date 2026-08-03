@@ -1,6 +1,6 @@
 "use client";
 
-import { MapPin, Navigation, User, Phone, Calendar, Clock, ArrowRight } from "lucide-react";
+import { MapPin, Navigation, User, Phone, Calendar, Clock, ArrowRight, Plus, X, CircleDot } from "lucide-react";
 import { motion } from "framer-motion";
 import AddressInput from "@/components/booking/AddressInput";
 import { VEHICLES, type VehicleType } from "@/lib/fare";
@@ -14,6 +14,7 @@ interface BookingFormFieldsProps {
   error: string;
   loading: boolean;
   mapsLoaded: boolean;
+  stopCount: number;
   onNameChange: (v: string) => void;
   onPhoneChange: (v: string) => void;
   onDateChange: (v: string) => void;
@@ -21,13 +22,16 @@ interface BookingFormFieldsProps {
   onVehicleChange: (v: VehicleType) => void;
   onPickup: (place: google.maps.places.PlaceResult) => void;
   onDropoff: (place: google.maps.places.PlaceResult) => void;
+  onStopSelect: (index: number, place: google.maps.places.PlaceResult) => void;
+  onAddStop: () => void;
+  onRemoveStop: (index: number) => void;
   onSubmit: () => void;
 }
 
 export default function BookingFormFields({
-  name, phone, date, time, vehicle, error, loading, mapsLoaded,
+  name, phone, date, time, vehicle, error, loading, mapsLoaded, stopCount,
   onNameChange, onPhoneChange, onDateChange, onTimeChange, onVehicleChange,
-  onPickup, onDropoff, onSubmit,
+  onPickup, onDropoff, onStopSelect, onAddStop, onRemoveStop, onSubmit,
 }: BookingFormFieldsProps) {
   const fieldCls = "flex items-center gap-3 bg-white rounded-xl px-4 py-3.5 border border-gray-200 focus-within:border-crimson/50 transition-colors";
   const inputCls = "bg-transparent text-navy text-sm outline-none w-full placeholder:text-navy/35";
@@ -80,6 +84,27 @@ export default function BookingFormFields({
             icon={<MapPin className="w-4 h-4 text-green-500" />}
             onPlaceSelect={onPickup}
           />
+          {Array.from({ length: stopCount }, (_, i) => (
+            <div key={i} className="relative">
+              <AddressInput
+                id={`book-stop-${i}`}
+                label={`Stop ${i + 1}`}
+                placeholder={`Enter stop ${i + 1} location`}
+                icon={<CircleDot className="w-4 h-4 text-amber-500" />}
+                onPlaceSelect={(place) => onStopSelect(i, place)}
+              />
+              <button type="button" onClick={() => onRemoveStop(i)}
+                className="absolute top-0 right-0 p-1 text-navy/30 hover:text-crimson transition-colors cursor-pointer">
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          ))}
+          {stopCount < 5 && (
+            <button type="button" onClick={onAddStop}
+              className="flex items-center gap-2 text-sm text-crimson/70 hover:text-crimson font-medium cursor-pointer py-1">
+              <Plus className="w-4 h-4" /> Add a stop
+            </button>
+          )}
           <AddressInput
             id="book-dropoff"
             label="Drop-off Location"

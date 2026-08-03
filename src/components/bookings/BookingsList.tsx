@@ -11,6 +11,7 @@ interface Booking {
   id: string;
   pickup: string;
   dropoff: string;
+  stops?: string | null;
   date: string;
   time: string;
   distance: number;
@@ -155,23 +156,7 @@ function BookingCard({ booking: b, index, expanded, onToggle }: {
         </div>
 
         {/* Route */}
-        <div className="flex gap-3">
-          <div className="flex flex-col items-center pt-1">
-            <div className="w-2.5 h-2.5 rounded-full bg-green-400 ring-4 ring-green-400/10" />
-            <div className="w-px h-full bg-gradient-to-b from-green-400/40 to-crimson/40 my-1 min-h-[24px]" />
-            <div className="w-2.5 h-2.5 rounded-full bg-crimson ring-4 ring-crimson/10" />
-          </div>
-          <div className="flex-1 min-w-0 space-y-3">
-            <div>
-              <div className="text-white/30 text-[10px] uppercase tracking-widest font-medium">Pickup</div>
-              <div className="text-white text-xs sm:text-sm font-medium leading-snug line-clamp-2">{b.pickup}</div>
-            </div>
-            <div>
-              <div className="text-white/30 text-[10px] uppercase tracking-widest font-medium">Drop-off</div>
-              <div className="text-white text-xs sm:text-sm font-medium leading-snug line-clamp-2">{b.dropoff}</div>
-            </div>
-          </div>
-        </div>
+        <RouteDisplay booking={b} />
       </div>
 
       {/* Expanded Details */}
@@ -256,6 +241,35 @@ function BookingCard({ booking: b, index, expanded, onToggle }: {
         </div>
       </div>
     </motion.div>
+  );
+}
+
+function RouteDisplay({ booking: b }: { booking: Booking }) {
+  const parsedStops: string[] = b.stops ? (() => { try { return JSON.parse(b.stops); } catch { return []; } })() : [];
+  const points = [
+    { label: "Pickup", address: b.pickup, color: "bg-green-400", ring: "ring-green-400/10" },
+    ...parsedStops.map((s: string, i: number) => ({ label: `Stop ${i + 1}`, address: s, color: "bg-amber-400", ring: "ring-amber-400/10" })),
+    { label: "Drop-off", address: b.dropoff, color: "bg-crimson", ring: "ring-crimson/10" },
+  ];
+  return (
+    <div className="flex gap-3">
+      <div className="flex flex-col items-center pt-1">
+        {points.map((p, i) => (
+          <div key={i} className="flex flex-col items-center">
+            {i > 0 && <div className="w-px h-5 bg-gradient-to-b from-white/20 to-white/10" />}
+            <div className={`w-2.5 h-2.5 rounded-full ${p.color} ring-4 ${p.ring}`} />
+          </div>
+        ))}
+      </div>
+      <div className="flex-1 min-w-0 space-y-3">
+        {points.map((p, i) => (
+          <div key={i}>
+            <div className="text-white/30 text-[10px] uppercase tracking-widest font-medium">{p.label}</div>
+            <div className="text-white text-xs sm:text-sm font-medium leading-snug line-clamp-2">{p.address}</div>
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }
 

@@ -3,9 +3,10 @@
 import { useState } from "react";
 import Script from "next/script";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight, MapPin, Navigation, User, Phone, Calendar, Clock } from "lucide-react";
+import { ArrowRight, MapPin, Navigation, User, Phone, Calendar, Clock, Plus, X, CircleDot } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { calculateFare, metersToMiles, VEHICLES, type VehicleType } from "@/lib/fare";
+import { calculateFare, VEHICLES, type VehicleType } from "@/lib/fare";
+import { calcMultiSegmentDistance } from "@/lib/distanceCalc";
 import { useAuth } from "@/context/AuthContext";
 import SuccessModal from "@/components/booking/SuccessModal";
 import HeroAddressInput from "@/components/home/HeroAddressInput";
@@ -25,6 +26,7 @@ export default function BookingCard() {
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
   const [vehicle, setVehicle] = useState<VehicleType>("car");
+  const [stops, setStops] = useState<PlaceData[]>([]);
   const [result, setResult] = useState<{ distance: number; fare: number } | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -35,7 +37,7 @@ export default function BookingCard() {
   const handleConfirm = async () => {
     if (!result || !pickup || !dropoff) return;
     setSaving(true);
-    const done = await confirmBooking({ result, pickup, dropoff, name, phone, date, time, vehicle, paymentMethod });
+    const done = await confirmBooking({ result, pickup, dropoff, stops: stops.map((s) => s.address), name, phone, date, time, vehicle, paymentMethod });
     setSaving(false);
     if (done) setBooked(true);
   };
@@ -45,26 +47,13 @@ export default function BookingCard() {
     if (!name.trim() || !phone.trim()) { setError("Enter name & phone"); return; }
     if (!pickup || !dropoff) { setError("Select both locations"); return; }
     if (!date || !time) { setError("Select date & time"); return; }
+    if (stops.some((s) => !s.lat)) { setError("Fill all stops or remove empty ones"); return; }
     setError("");
     setLoading(true);
-    const service = new google.maps.DistanceMatrixService();
-    service.getDistanceMatrix(
-      {
-        origins: [{ lat: pickup.lat, lng: pickup.lng }],
-        destinations: [{ lat: dropoff.lat, lng: dropoff.lng }],
-        travelMode: google.maps.TravelMode.DRIVING,
-        unitSystem: google.maps.UnitSystem.IMPERIAL,
-      },
-      (response, status) => {
-        setLoading(false);
-        if (status !== "OK" || !response?.rows[0]?.elements[0]?.distance) {
-          setError("Unable to calculate. Try again.");
-          return;
-        }
-        const meters = response.rows[0].elements[0].distance.value;
-        const miles = metersToMiles(meters);
-        setResult({ distance: miles, fare: calculateFare(miles, pickup.lat, pickup.lng, vehicle) });
-      }
+    calcMultiSegmentDistance(
+      [pickup, ...stops, dropoff],
+      (miles) => { setLoading(false); setResult({ distance: miles, fare: calculateFare(miles, pickup.lat, pickup.lng, vehicle) }); },
+      () => { setLoading(false); setError("Unable to calculate. Try again."); }
     );
   };
 
@@ -102,6 +91,21 @@ export default function BookingCard() {
           <HeroAddressInput id="hero-pickup" placeholder="Pickup Location"
             icon={<MapPin className="w-4 h-4 text-green-400" />} iconBg="bg-green-500/20"
             ready={mapsLoaded} onSelect={(p) => { setPickup(p); setResult(null); }} />
+          {stops.map((_, i) => (
+            <div key={i} className="relative">
+              <HeroAddressInput id={`hero-stop-${i}`} placeholder={`Stop ${i + 1}`}
+                icon={<CircleDot className="w-4 h-4 text-amber-400" />} iconBg="bg-amber-500/20"
+                ready={mapsLoaded} onSelect={(p) => { setStops((prev) => { const n = [...prev]; n[i] = p; return n; }); setResult(null); }} />
+              <button type="button" onClick={() => { setStops((s) => s.filter((_, j) => j !== i)); setResult(null); }}
+                className="absolute top-1/2 -translate-y-1/2 right-2 p-1 text-white/30 hover:text-crimson cursor-pointer">
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          ))}
+          {stops.length < 5 && (
+            <button type="button" onClick={() => setStops((s) => [...s, { address: "", lat: 0, lng: 0 }])}
+              className="flex items-center gap-1.5 text-xs text-gold/70 hover:text-gold font-medium cursor-pointer py-0.5"><Plus className="w-3.5 h-3.5" /> Add a stop</button>
+          )}
           <HeroAddressInput id="hero-dropoff" placeholder="Drop-off Location"
             icon={<Navigation className="w-4 h-4 text-crimson" />} iconBg="bg-crimson/20"
             ready={mapsLoaded} onSelect={(p) => { setDropoff(p); setResult(null); }} />
@@ -179,12 +183,13 @@ export default function BookingCard() {
           <SuccessModal
             name={name} phone={phone}
             pickup={pickup.address} dropoff={dropoff.address}
+            stops={stops.map((s) => s.address)}
             date={date} time={time}
             distance={result.distance} fare={result.fare}
             onClose={() => {
               setBooked(false);
               setName(""); setPhone(""); setDate(""); setTime("");
-              setPickup(null); setDropoff(null); setResult(null);
+              setPickup(null); setDropoff(null); setStops([]); setResult(null);
             }}
           />
         )}

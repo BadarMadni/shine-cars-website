@@ -8,6 +8,7 @@ interface SuccessModalProps {
   phone: string;
   pickup: string;
   dropoff: string;
+  stops?: string[];
   date: string;
   time: string;
   distance: number;
@@ -16,7 +17,7 @@ interface SuccessModalProps {
 }
 
 export default function SuccessModal({
-  name, phone, pickup, dropoff, date, time, distance, fare, onClose,
+  name, phone, pickup, dropoff, stops = [], date, time, distance, fare, onClose,
 }: SuccessModalProps) {
   return (
     <motion.div
@@ -77,6 +78,9 @@ export default function SuccessModal({
           <DetailRow icon={<User className="w-4 h-4 text-crimson" />} label="Name" value={name} />
           <DetailRow icon={<Phone className="w-4 h-4 text-crimson" />} label="Phone" value={phone} />
           <DetailRow icon={<MapPin className="w-4 h-4 text-green-500" />} label="Pickup" value={pickup} />
+          {stops.map((s, i) => (
+            <DetailRow key={i} icon={<MapPin className="w-4 h-4 text-amber-500" />} label={`Stop ${i + 1}`} value={s} />
+          ))}
           <DetailRow icon={<Navigation className="w-4 h-4 text-crimson" />} label="Drop-off" value={dropoff} />
           <div className="grid grid-cols-2 gap-3">
             <DetailRow icon={<Calendar className="w-4 h-4 text-gold" />} label="Date" value={date} />

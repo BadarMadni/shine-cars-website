@@ -6,7 +6,8 @@ import PageHero from "@/components/shared/PageHero";
 import AnimatedSection from "@/components/ui/AnimatedSection";
 import FareResult from "@/components/booking/FareResult";
 import BookingFormFields from "@/components/pages/BookingFormFields";
-import { calculateFare, metersToMiles, isOutsideOfficeRadius, VEHICLES, type VehicleType } from "@/lib/fare";
+import { calculateFare, isOutsideOfficeRadius, VEHICLES, type VehicleType } from "@/lib/fare";
+import { calcMultiSegmentDistance } from "@/lib/distanceCalc";
 
 interface PlaceData {
   address: string;
@@ -23,6 +24,7 @@ export default function BookingContent() {
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
   const [vehicle, setVehicle] = useState<VehicleType>("car");
+  const [stops, setStops] = useState<PlaceData[]>([]);
   const [result, setResult] = useState<{ distance: number; fare: number } | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -56,6 +58,20 @@ export default function BookingContent() {
     setResult(null);
   }, []);
 
+  const handleStopSelect = useCallback((index: number, place: google.maps.places.PlaceResult) => {
+    if (!place.geometry?.location) return;
+    setStops((prev) => {
+      const next = [...prev];
+      next[index] = {
+        address: buildAddress(place),
+        lat: place.geometry!.location!.lat(),
+        lng: place.geometry!.location!.lng(),
+      };
+      return next;
+    });
+    setResult(null);
+  }, []);
+
   const getQuote = () => {
     if (!pickup || !dropoff) {
       setError("Please select both pickup and drop-off locations.");
@@ -69,27 +85,17 @@ export default function BookingContent() {
       setError("Please select date and time.");
       return;
     }
+    if (stops.some((s) => !s)) {
+      setError("Please fill in all stop locations or remove empty ones.");
+      return;
+    }
     setError("");
     setLoading(true);
 
-    const service = new google.maps.DistanceMatrixService();
-    service.getDistanceMatrix(
-      {
-        origins: [{ lat: pickup.lat, lng: pickup.lng }],
-        destinations: [{ lat: dropoff.lat, lng: dropoff.lng }],
-        travelMode: google.maps.TravelMode.DRIVING,
-        unitSystem: google.maps.UnitSystem.IMPERIAL,
-      },
-      (response, status) => {
-        setLoading(false);
-        if (status !== "OK" || !response?.rows[0]?.elements[0]?.distance) {
-          setError("Unable to calculate distance. Please try again.");
-          return;
-        }
-        const meters = response.rows[0].elements[0].distance.value;
-        const miles = metersToMiles(meters);
-        setResult({ distance: miles, fare: calculateFare(miles, pickup.lat, pickup.lng, vehicle) });
-      }
+    calcMultiSegmentDistance(
+      [pickup, ...stops, dropoff],
+      (miles) => { setLoading(false); setResult({ distance: miles, fare: calculateFare(miles, pickup.lat, pickup.lng, vehicle) }); },
+      () => { setLoading(false); setError("Unable to calculate distance. Please try again."); }
     );
   };
 
@@ -128,6 +134,7 @@ export default function BookingContent() {
                 error={error}
                 loading={loading}
                 mapsLoaded={mapsLoaded}
+                stopCount={stops.length}
                 onNameChange={setName}
                 onPhoneChange={setPhone}
                 onDateChange={setDate}
@@ -135,6 +142,9 @@ export default function BookingContent() {
                 onVehicleChange={(v) => { setVehicle(v); setResult(null); }}
                 onPickup={handlePickup}
                 onDropoff={handleDropoff}
+                onStopSelect={handleStopSelect}
+                onAddStop={() => setStops((s) => [...s, { address: "", lat: 0, lng: 0 }])}
+                onRemoveStop={(i) => { setStops((s) => s.filter((_, j) => j !== i)); setResult(null); }}
                 onSubmit={getQuote}
               />
 
@@ -142,6 +152,7 @@ export default function BookingContent() {
                 <FareResult
                   pickup={pickup.address}
                   dropoff={dropoff.address}
+                  stops={stops.map((s) => s.address)}
                   distanceMiles={result.distance}
                   fare={result.fare}
                   vehicle={VEHICLES[vehicle].label}
@@ -152,7 +163,7 @@ export default function BookingContent() {
                   time={time}
                   onReset={() => {
                     setName(""); setPhone(""); setDate(""); setTime("");
-                    setPickup(null); setDropoff(null); setResult(null);
+                    setPickup(null); setDropoff(null); setStops([]); setResult(null);
                   }}
                 />
               )}
