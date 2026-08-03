@@ -5,7 +5,7 @@ import { signToken, COOKIE_NAME } from "@/lib/auth";
 
 export async function POST(req: NextRequest) {
   try {
-    const { name, email, phone, password, accountType } = await req.json();
+    const { name, email, phone, password, accountType, companyName } = await req.json();
 
     if (!name || !email || !phone || !password || !accountType) {
       return NextResponse.json({ error: "All fields are required" }, { status: 400 });
@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
 
     const hashed = await bcrypt.hash(password, 10);
     const customer = await prisma.customer.create({
-      data: { name, email, phone, password: hashed, accountType },
+      data: { name, email, phone, password: hashed, accountType, companyName: accountType === "company" ? companyName : null },
     });
 
     const token = signToken({

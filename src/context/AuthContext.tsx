@@ -24,6 +24,7 @@ interface SignupData {
   phone: string;
   password: string;
   accountType: "company" | "individual";
+  companyName?: string;
 }
 
 const AuthContext = createContext<AuthContextType>({

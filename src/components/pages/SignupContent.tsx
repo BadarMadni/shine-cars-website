@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { User, Mail, Phone, Lock, ArrowRight, Eye, EyeOff } from "lucide-react";
+import { User, Mail, Phone, Lock, ArrowRight, Eye, EyeOff, Building2 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import PageHero from "@/components/shared/PageHero";
 import AnimatedSection from "@/components/ui/AnimatedSection";
@@ -16,6 +16,7 @@ export default function SignupContent() {
   const [step, setStep] = useState<"type" | "form">("type");
   const [accountType, setAccountType] = useState<"company" | "individual">("individual");
   const [name, setName] = useState("");
+  const [companyName, setCompanyName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
@@ -30,7 +31,7 @@ export default function SignupContent() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name || !email || !phone || !password) {
+    if (!name || !email || !phone || !password || (accountType === "company" && !companyName)) {
       setError("All fields are required");
       return;
     }
@@ -40,7 +41,7 @@ export default function SignupContent() {
     }
     setError("");
     setLoading(true);
-    const err = await signup({ name, email, phone, password, accountType });
+    const err = await signup({ name, email, phone, password, accountType, companyName: accountType === "company" ? companyName : undefined });
     setLoading(false);
     if (err) { setError(err); return; }
     router.push("/booking");
@@ -96,6 +97,9 @@ export default function SignupContent() {
                 </button>
               </p>
 
+              {accountType === "company" && inputRow("signup-company", "Company Name",
+                <Building2 className="w-4 h-4 text-navy/30 shrink-0" />,
+                "text", companyName, setCompanyName, "Shine Cars Ltd")}
               {inputRow("signup-name", "Full Name",
                 <User className="w-4 h-4 text-navy/30 shrink-0" />,
                 "text", name, setName, "John Smith")}
