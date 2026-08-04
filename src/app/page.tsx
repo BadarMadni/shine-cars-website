@@ -13,8 +13,8 @@ export default function Home() {
       <HeroSection />
       <ServicesSection />
       <StatsSection />
-      <AvailableTaxis />
-      <FleetSection />
+      {/* <AvailableTaxis /> */}
+      {/* <FleetSection /> */}
       <WhyChooseUs />
       <TestimonialsSection />
       <AppDownload />
