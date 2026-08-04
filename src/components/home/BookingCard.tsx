@@ -5,7 +5,7 @@ import Script from "next/script";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight, MapPin, Navigation, User, Phone, Calendar, Clock, Plus, X, CircleDot } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { calculateFare, VEHICLES, type VehicleType } from "@/lib/fare";
+import { calculateFare, isSundayOrHoliday, VEHICLES, type VehicleType } from "@/lib/fare";
 import { calcMultiSegmentDistance } from "@/lib/distanceCalc";
 import { useAuth } from "@/context/AuthContext";
 import SuccessModal from "@/components/booking/SuccessModal";
@@ -52,7 +52,7 @@ export default function BookingCard() {
     setLoading(true);
     calcMultiSegmentDistance(
       [pickup, ...stops, dropoff],
-      (miles) => { setLoading(false); setResult({ distance: miles, fare: calculateFare(miles, pickup.lat, pickup.lng, vehicle) }); },
+      (miles) => { setLoading(false); setResult({ distance: miles, fare: calculateFare(miles, pickup.lat, pickup.lng, vehicle, isSundayOrHoliday(date)) }); },
       () => { setLoading(false); setError("Unable to calculate. Try again."); }
     );
   };

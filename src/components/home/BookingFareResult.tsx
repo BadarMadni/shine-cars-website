@@ -5,7 +5,7 @@ import {
   ArrowRight, MapPin, Navigation, Route, PoundSterling,
   Banknote, CreditCard,
 } from "lucide-react";
-import { isOutsideOfficeRadius, SURCHARGE } from "@/lib/fare";
+import { isOutsideOfficeRadius, pickupSurcharge } from "@/lib/fare";
 
 interface BookingFareResultProps {
   result: { distance: number; fare: number };
@@ -32,7 +32,7 @@ export default function BookingFareResult({
 
       {isOutsideOfficeRadius(pickup.lat, pickup.lng) && (
         <div className="text-yellow-400/80 text-xs">
-          +£{SURCHARGE.toFixed(2)} out-of-area surcharge applied
+          +£{pickupSurcharge(pickup.lat, pickup.lng).toFixed(2)} out-of-area surcharge applied
         </div>
       )}
 

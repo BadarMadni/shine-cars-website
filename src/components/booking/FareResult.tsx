@@ -130,7 +130,7 @@ export default function FareResult({
             </div>
             {surcharge && (
               <div className="text-yellow-400/80 text-xs mt-1">
-                Includes £2.00 out-of-area surcharge
+                Includes out-of-area surcharge
               </div>
             )}
           </div>

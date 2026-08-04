@@ -6,7 +6,7 @@ import PageHero from "@/components/shared/PageHero";
 import AnimatedSection from "@/components/ui/AnimatedSection";
 import FareResult from "@/components/booking/FareResult";
 import BookingFormFields from "@/components/pages/BookingFormFields";
-import { calculateFare, isOutsideOfficeRadius, VEHICLES, type VehicleType } from "@/lib/fare";
+import { calculateFare, isOutsideOfficeRadius, isSundayOrHoliday, VEHICLES, type VehicleType } from "@/lib/fare";
 import { calcMultiSegmentDistance } from "@/lib/distanceCalc";
 
 interface PlaceData {
@@ -94,7 +94,7 @@ export default function BookingContent() {
 
     calcMultiSegmentDistance(
       [pickup, ...stops, dropoff],
-      (miles) => { setLoading(false); setResult({ distance: miles, fare: calculateFare(miles, pickup.lat, pickup.lng, vehicle) }); },
+      (miles) => { setLoading(false); setResult({ distance: miles, fare: calculateFare(miles, pickup.lat, pickup.lng, vehicle, isSundayOrHoliday(date)) }); },
       () => { setLoading(false); setError("Unable to calculate distance. Please try again."); }
     );
   };
