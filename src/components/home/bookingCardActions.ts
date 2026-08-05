@@ -9,6 +9,7 @@ interface ConfirmBookingParams {
   time: string;
   vehicle: string;
   paymentMethod: "cash" | "card";
+  fareType: "fixed" | "meter";
 }
 
 /**
@@ -17,7 +18,7 @@ interface ConfirmBookingParams {
  * Returns true when booking is complete (cash), false when redirecting (card).
  */
 export async function confirmBooking(params: ConfirmBookingParams): Promise<boolean> {
-  const { result, pickup, dropoff, stops, name, phone, date, time, vehicle, paymentMethod } = params;
+  const { result, pickup, dropoff, stops, name, phone, date, time, vehicle, paymentMethod, fareType } = params;
 
   try {
     if (paymentMethod === "card") {
@@ -26,7 +27,7 @@ export async function confirmBooking(params: ConfirmBookingParams): Promise<bool
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name, phone, pickup: pickup.address, dropoff: dropoff.address, stops,
-          date, time, distance: result.distance, fare: result.fare, vehicle, source: "homepage",
+          date, time, distance: result.distance, fare: result.fare, vehicle, fareType, source: "homepage",
         }),
       });
       const data = await res.json();
@@ -39,7 +40,7 @@ export async function confirmBooking(params: ConfirmBookingParams): Promise<bool
       body: JSON.stringify({
         name, phone, pickup: pickup.address, dropoff: dropoff.address, stops,
         date, time, distance: result.distance, fare: result.fare, vehicle,
-        paymentMethod: "cash", source: "homepage",
+        paymentMethod: "cash", fareType, source: "homepage",
       }),
     });
     return true;

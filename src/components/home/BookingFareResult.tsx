@@ -36,12 +36,21 @@ export default function BookingFareResult({
         </div>
       )}
 
-      <div className="flex items-center gap-2 mb-3">
+      <div className="flex items-center gap-2 mb-1">
         <PoundSterling className="w-5 h-5 text-gold" />
-        <span className="text-3xl font-extrabold gradient-text">
-          &pound;{result.fare.toFixed(2)}
-        </span>
+        {paymentMethod === "cash" ? (
+          <span className="text-3xl font-extrabold gradient-text">
+            &pound;{(result.fare * 0.9).toFixed(2)} – £{(result.fare * 1.1).toFixed(2)}
+          </span>
+        ) : (
+          <span className="text-3xl font-extrabold gradient-text">
+            &pound;{result.fare.toFixed(2)}
+          </span>
+        )}
       </div>
+      {paymentMethod === "cash" && (
+        <p className="text-white/40 text-xs mb-2">Meter fare — final amount based on actual distance</p>
+      )}
 
       {/* Payment Method */}
       <div className="grid grid-cols-2 gap-2 mb-3">

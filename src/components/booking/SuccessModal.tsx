@@ -13,11 +13,12 @@ interface SuccessModalProps {
   time: string;
   distance: number;
   fare: number;
+  fareType?: string;
   onClose: () => void;
 }
 
 export default function SuccessModal({
-  name, phone, pickup, dropoff, stops = [], date, time, distance, fare, onClose,
+  name, phone, pickup, dropoff, stops = [], date, time, distance, fare, fareType, onClose,
 }: SuccessModalProps) {
   return (
     <motion.div
@@ -93,8 +94,12 @@ export default function SuccessModal({
               <div className="text-navy font-semibold text-sm">{distance.toFixed(1)} miles</div>
             </div>
             <div className="text-right">
-              <div className="text-navy/50 text-xs">Total Fare</div>
-              <div className="text-2xl font-extrabold gradient-text">&pound;{fare.toFixed(2)}</div>
+              <div className="text-navy/50 text-xs">{fareType === "meter" ? "Estimated Range (Meter)" : "Total Fare"}</div>
+              {fareType === "meter" ? (
+                <div className="text-2xl font-extrabold gradient-text">&pound;{(fare * 0.9).toFixed(2)} – £{(fare * 1.1).toFixed(2)}</div>
+              ) : (
+                <div className="text-2xl font-extrabold gradient-text">&pound;{fare.toFixed(2)}</div>
+              )}
             </div>
           </div>
 

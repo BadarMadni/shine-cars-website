@@ -41,7 +41,7 @@ export default function FareResult({
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             name, phone, pickup, dropoff, stops, date, time,
-            distance: distanceMiles, fare, vehicle, source: "booking-page",
+            distance: distanceMiles, fare, vehicle, fareType: "fixed", source: "booking-page",
           }),
         });
         const data = await res.json();
@@ -57,7 +57,7 @@ export default function FareResult({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name, phone, pickup, dropoff, stops, date, time,
-          distance: distanceMiles, fare, paymentMethod: "cash", source: "booking-page",
+          distance: distanceMiles, fare, paymentMethod: "cash", fareType: "meter", source: "booking-page",
         }),
       });
       setSaving(false);
@@ -81,53 +81,37 @@ export default function FareResult({
         </h3>
 
         <div className="space-y-3 mb-6">
-          <div className="flex items-start gap-3">
-            <MapPin className="w-4 h-4 text-green-400 mt-0.5 shrink-0" />
-            <div>
-              <div className="text-white/50 text-xs">Pickup</div>
-              <div className="text-sm font-medium">{pickup}</div>
-            </div>
-          </div>
-          {stops.map((s, i) => (
-            <div key={i} className="flex items-start gap-3">
-              <MapPin className="w-4 h-4 text-amber-400 mt-0.5 shrink-0" />
-              <div>
-                <div className="text-white/50 text-xs">Stop {i + 1}</div>
-                <div className="text-sm font-medium">{s}</div>
-              </div>
+          {[
+            { icon: MapPin, color: "text-green-400", label: "Pickup", value: pickup },
+            ...stops.map((s, i) => ({ icon: MapPin, color: "text-amber-400", label: `Stop ${i + 1}`, value: s })),
+            { icon: Navigation, color: "text-crimson", label: "Drop-off", value: dropoff },
+            { icon: Route, color: "text-gold", label: "Distance", value: `${distanceMiles.toFixed(1)} miles` },
+            ...(vehicle ? [{ icon: Route, color: "text-gold", label: "Vehicle", value: vehicle }] : []),
+          ].map(({ icon: Icon, color, label, value }) => (
+            <div key={label} className="flex items-start gap-3">
+              <Icon className={`w-4 h-4 ${color} mt-0.5 shrink-0`} />
+              <div><div className="text-white/50 text-xs">{label}</div><div className="text-sm font-medium">{value}</div></div>
             </div>
           ))}
-          <div className="flex items-start gap-3">
-            <Navigation className="w-4 h-4 text-crimson mt-0.5 shrink-0" />
-            <div>
-              <div className="text-white/50 text-xs">Drop-off</div>
-              <div className="text-sm font-medium">{dropoff}</div>
-            </div>
-          </div>
-          <div className="flex items-start gap-3">
-            <Route className="w-4 h-4 text-gold mt-0.5 shrink-0" />
-            <div>
-              <div className="text-white/50 text-xs">Distance</div>
-              <div className="text-sm font-medium">{distanceMiles.toFixed(1)} miles</div>
-            </div>
-          </div>
-          {vehicle && (
-            <div className="flex items-start gap-3">
-              <Route className="w-4 h-4 text-gold mt-0.5 shrink-0" />
-              <div>
-                <div className="text-white/50 text-xs">Vehicle</div>
-                <div className="text-sm font-medium">{vehicle}</div>
-              </div>
-            </div>
-          )}
         </div>
 
         <div className="border-t border-white/10 pt-5 mb-5 flex items-end justify-between">
           <div>
-            <div className="text-white/50 text-xs mb-1">Estimated Fare</div>
-            <div className="text-4xl font-extrabold gradient-text">
-              &pound;{fare.toFixed(2)}
-            </div>
+            <div className="text-white/50 text-xs mb-1">{paymentMethod === "cash" ? "Estimated Range (Meter)" : "Estimated Fare"}</div>
+            {paymentMethod === "cash" ? (
+              <div className="text-4xl font-extrabold gradient-text">
+                &pound;{(fare * 0.9).toFixed(2)} – £{(fare * 1.1).toFixed(2)}
+              </div>
+            ) : (
+              <div className="text-4xl font-extrabold gradient-text">
+                &pound;{fare.toFixed(2)}
+              </div>
+            )}
+            {paymentMethod === "cash" && (
+              <div className="text-orange-400/80 text-xs mt-1">
+                Final fare based on actual meter distance
+              </div>
+            )}
             {surcharge && (
               <div className="text-yellow-400/80 text-xs mt-1">
                 Includes out-of-area surcharge
@@ -181,6 +165,7 @@ export default function FareResult({
             pickup={pickup} dropoff={dropoff}
             date={date} time={time}
             distance={distanceMiles} fare={fare}
+            fareType={paymentMethod === "cash" ? "meter" : "fixed"}
             onClose={() => { setBooked(false); onReset?.(); }}
           />
         )}

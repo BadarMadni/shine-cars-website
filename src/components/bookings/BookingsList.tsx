@@ -20,6 +20,8 @@ interface Booking {
   status: string;
   paymentMethod: string;
   paymentStatus: string;
+  fareType?: string;
+  meterFare?: number | null;
   createdAt: string;
   driver?: { name: string; phone: string } | null;
 }
@@ -144,10 +146,17 @@ function BookingCard({ booking: b, index, expanded, onToggle }: {
             }`}>
               {b.vehicle.toUpperCase()}
             </span>
+            {b.fareType === "meter" && (
+              <span className="text-[11px] sm:text-xs font-semibold px-2 sm:px-2.5 py-1 sm:py-1.5 rounded-full bg-orange-500/10 text-orange-400">
+                METER
+              </span>
+            )}
           </div>
           <div className="flex items-center gap-2 sm:gap-3 shrink-0">
             <span className="text-gold font-bold text-base sm:text-lg">
-              &pound;{b.fare.toFixed(2)}
+              {b.fareType === "meter" && !b.meterFare
+                ? `£${(b.fare * 0.9).toFixed(2)} – £${(b.fare * 1.1).toFixed(2)}`
+                : `£${(b.meterFare ?? b.fare).toFixed(2)}`}
             </span>
             <ChevronDown className={`w-4 h-4 text-white/30 transition-transform duration-300 ${
               expanded ? "rotate-180" : ""
@@ -181,6 +190,11 @@ function BookingCard({ booking: b, index, expanded, onToggle }: {
                   value={`${b.paymentMethod.toUpperCase()} — ${b.paymentStatus.toUpperCase()}`}
                 />
               </div>
+              {b.fareType === "meter" && (
+                <p className="text-orange-400/70 text-xs mt-3">
+                  {b.meterFare ? `Meter fare: £${b.meterFare.toFixed(2)}` : "Estimated fare — final amount based on actual meter distance"}
+                </p>
+              )}
             </div>
           </motion.div>
         )}

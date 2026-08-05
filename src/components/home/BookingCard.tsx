@@ -5,7 +5,7 @@ import Script from "next/script";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight, MapPin, Navigation, User, Phone, Calendar, Clock, Plus, X, CircleDot } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { calculateFare, isSundayOrHoliday, VEHICLES, type VehicleType } from "@/lib/fare";
+import { calculateFare, calculateFareRange, isSundayOrHoliday, VEHICLES, type VehicleType } from "@/lib/fare";
 import { calcMultiSegmentDistance } from "@/lib/distanceCalc";
 import { useAuth } from "@/context/AuthContext";
 import SuccessModal from "@/components/booking/SuccessModal";
@@ -37,7 +37,8 @@ export default function BookingCard() {
   const handleConfirm = async () => {
     if (!result || !pickup || !dropoff) return;
     setSaving(true);
-    const done = await confirmBooking({ result, pickup, dropoff, stops: stops.map((s) => s.address), name, phone, date, time, vehicle, paymentMethod });
+    const fareType = paymentMethod === "cash" ? "meter" : "fixed";
+    const done = await confirmBooking({ result, pickup, dropoff, stops: stops.map((s) => s.address), name, phone, date, time, vehicle, paymentMethod, fareType });
     setSaving(false);
     if (done) setBooked(true);
   };
@@ -186,6 +187,7 @@ export default function BookingCard() {
             stops={stops.map((s) => s.address)}
             date={date} time={time}
             distance={result.distance} fare={result.fare}
+            fareType={paymentMethod === "cash" ? "meter" : "fixed"}
             onClose={() => {
               setBooked(false);
               setName(""); setPhone(""); setDate(""); setTime("");

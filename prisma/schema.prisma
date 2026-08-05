@@ -22,6 +22,9 @@ model Booking {
   source        String   @default("website")
   paymentMethod String   @default("cash")
   paymentStatus String   @default("unpaid")
+  fareType      String   @default("fixed")
+  meterDistance Float?
+  meterFare     Float?
   customerId    String?
   driverId      String?
   stops         String?
