@@ -6,6 +6,8 @@ import PageHero from "@/components/shared/PageHero";
 import AnimatedSection from "@/components/ui/AnimatedSection";
 import FareResult from "@/components/booking/FareResult";
 import BookingFormFields from "@/components/pages/BookingFormFields";
+import RecurringBookingForm from "@/components/booking/RecurringBookingForm";
+import { useAuth } from "@/context/AuthContext";
 import { calculateFare, isOutsideOfficeRadius, isSundayOrHoliday, VEHICLES, type VehicleType } from "@/lib/fare";
 import { calcMultiSegmentDistance } from "@/lib/distanceCalc";
 
@@ -16,6 +18,9 @@ interface PlaceData {
 }
 
 export default function BookingContent() {
+  const { customer } = useAuth();
+  const isCompany = customer?.accountType === "company";
+  const [tab, setTab] = useState<"onetime" | "recurring">("onetime");
   const [mapsLoaded, setMapsLoaded] = useState(() => typeof window !== "undefined" && !!window.google?.maps?.places);
   const [pickup, setPickup] = useState<PlaceData | null>(null);
   const [dropoff, setDropoff] = useState<PlaceData | null>(null);
@@ -117,6 +122,24 @@ export default function BookingContent() {
       <section className="py-14 sm:py-24 bg-white">
         <div className="mx-auto max-w-2xl px-5 sm:px-6 lg:px-8">
           <AnimatedSection>
+            {isCompany && (
+              <div className="flex gap-2 mb-6">
+                <button onClick={() => setTab("onetime")}
+                  className={`flex-1 py-3 rounded-xl font-bold text-sm transition-all cursor-pointer ${
+                    tab === "onetime" ? "bg-crimson text-white" : "bg-gray-100 text-navy/50 hover:bg-gray-200"
+                  }`}>One-time Booking</button>
+                <button onClick={() => setTab("recurring")}
+                  className={`flex-1 py-3 rounded-xl font-bold text-sm transition-all cursor-pointer ${
+                    tab === "recurring" ? "bg-crimson text-white" : "bg-gray-100 text-navy/50 hover:bg-gray-200"
+                  }`}>Recurring Booking</button>
+              </div>
+            )}
+
+            {isCompany && tab === "recurring" ? (
+              <div className="bg-navy rounded-3xl p-6 sm:p-10">
+                <RecurringBookingForm mapsLoaded={mapsLoaded} />
+              </div>
+            ) : (
             <div className="bg-gray-50 rounded-3xl p-6 sm:p-10 border border-gray-100">
               <h2 className="text-2xl font-bold text-navy mb-1">
                 Get Instant <span className="gradient-text">Quote</span>
@@ -168,6 +191,7 @@ export default function BookingContent() {
                 />
               )}
             </div>
+            )}
           </AnimatedSection>
         </div>
       </section>

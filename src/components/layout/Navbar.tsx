@@ -38,40 +38,52 @@ export default function Navbar() {
           </Link>
 
           {/* Desktop Nav */}
-          <div className="hidden lg:flex items-center gap-8">
+          <div className="hidden lg:flex items-center gap-6">
             {NAV_LINKS.map((link) => (
               <Link key={link.href} href={link.href}
-                className="text-white/80 hover:text-gold font-medium transition-colors duration-300 relative group">
+                className="text-white/80 hover:text-gold text-sm font-medium transition-colors duration-300 relative group">
                 {link.label}
                 <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-crimson to-gold transition-all duration-300 group-hover:w-full" />
               </Link>
             ))}
           </div>
 
-          <div className="hidden lg:flex items-center gap-4">
+          <div className="hidden lg:flex items-center gap-3">
             <a href={`tel:${SITE.phone}`}
-              className="flex items-center gap-2 text-gold font-semibold">
-              <Phone className="w-4 h-4" />
+              className="flex items-center gap-1.5 text-gold font-semibold text-sm whitespace-nowrap">
+              <Phone className="w-3.5 h-3.5" />
               {SITE.phone}
             </a>
 
             {!loading && customer ? (
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
                 <Link href="/my-bookings"
-                  className="text-white/80 hover:text-gold font-medium transition-colors text-sm">
-                  My Bookings
+                  className="text-white/80 hover:text-gold font-medium transition-colors text-xs">
+                  Bookings
                 </Link>
-                <div className="flex items-center gap-2 text-white/80 text-sm">
-                  <UserCircle className="w-5 h-5 text-gold" />
-                  <span className="font-medium max-w-[120px] truncate">{customer.name}</span>
+                {customer.accountType === "company" && (
+                  <>
+                    <Link href="/recurring"
+                      className="text-white/80 hover:text-gold font-medium transition-colors text-xs">
+                      Recurring
+                    </Link>
+                    <Link href="/invoices"
+                      className="text-white/80 hover:text-gold font-medium transition-colors text-xs">
+                      Invoices
+                    </Link>
+                  </>
+                )}
+                <div className="flex items-center gap-1.5 text-white/80 text-xs border-l border-white/10 pl-2 ml-1">
+                  <UserCircle className="w-4 h-4 text-gold" />
+                  <span className="font-medium max-w-[90px] truncate">{customer.name}</span>
                 </div>
                 <button onClick={logout}
                   className="text-white/40 hover:text-red-400 transition-colors cursor-pointer"
                   title="Logout">
-                  <LogOut className="w-4 h-4" />
+                  <LogOut className="w-3.5 h-3.5" />
                 </button>
                 <Link href="/booking"
-                  className="bg-gradient-to-r from-crimson to-crimson-dark text-white px-6 py-2.5 rounded-full font-semibold hover:shadow-[0_0_25px_rgba(204,34,41,0.4)] transition-all duration-300">
+                  className="bg-gradient-to-r from-crimson to-crimson-dark text-white px-5 py-2 rounded-full font-semibold text-sm hover:shadow-[0_0_25px_rgba(204,34,41,0.4)] transition-all duration-300">
                   Book Now
                 </Link>
               </div>
@@ -130,6 +142,18 @@ export default function Navbar() {
                       className="block text-center text-white/80 hover:text-gold py-3 font-medium">
                       My Bookings
                     </Link>
+                    {customer.accountType === "company" && (
+                      <>
+                        <Link href="/recurring" onClick={() => setIsOpen(false)}
+                          className="block text-center text-white/80 hover:text-gold py-3 font-medium">
+                          Recurring
+                        </Link>
+                        <Link href="/invoices" onClick={() => setIsOpen(false)}
+                          className="block text-center text-white/80 hover:text-gold py-3 font-medium">
+                          Invoices
+                        </Link>
+                      </>
+                    )}
                     <Link href="/booking" onClick={() => setIsOpen(false)}
                       className="block text-center bg-gradient-to-r from-crimson to-crimson-dark text-white py-3 rounded-full font-semibold">
                       Book Now
