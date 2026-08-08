@@ -139,38 +139,36 @@ export default function BookingFormFields({
       </div>
 
       {/* Date & Time */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div>
-          <label htmlFor="book-date" className="block text-navy/70 text-sm font-medium mb-1.5">
-            Date
-          </label>
-          <div className={fieldCls}>
-            <Calendar className="w-4 h-4 text-navy/30 shrink-0" />
-            <input
-              id="book-date"
-              type="date"
-              value={date}
-              onChange={(e) => onDateChange(e.target.value)}
-              min={new Date().toISOString().split("T")[0]}
-              className="bg-transparent text-navy text-sm outline-none w-full"
-            />
+      <div className="flex items-end gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 flex-1">
+          <div>
+            <label htmlFor="book-date" className="block text-navy/70 text-sm font-medium mb-1.5">Date</label>
+            <div className={fieldCls}>
+              <Calendar className="w-4 h-4 text-navy/30 shrink-0" />
+              <input id="book-date" type="date" value={date}
+                onChange={(e) => onDateChange(e.target.value)}
+                min={new Date().toISOString().split("T")[0]}
+                className="bg-transparent text-navy text-sm outline-none w-full" />
+            </div>
+          </div>
+          <div>
+            <label htmlFor="book-time" className="block text-navy/70 text-sm font-medium mb-1.5">Time</label>
+            <div className={fieldCls}>
+              <Clock className="w-4 h-4 text-navy/30 shrink-0" />
+              <input id="book-time" type="time" value={time}
+                onChange={(e) => onTimeChange(e.target.value)}
+                className="bg-transparent text-navy text-sm outline-none w-full" />
+            </div>
           </div>
         </div>
-        <div>
-          <label htmlFor="book-time" className="block text-navy/70 text-sm font-medium mb-1.5">
-            Time
-          </label>
-          <div className={fieldCls}>
-            <Clock className="w-4 h-4 text-navy/30 shrink-0" />
-            <input
-              id="book-time"
-              type="time"
-              value={time}
-              onChange={(e) => onTimeChange(e.target.value)}
-              className="bg-transparent text-navy text-sm outline-none w-full"
-            />
-          </div>
-        </div>
+        <button type="button" onClick={() => {
+            const now = new Date();
+            onDateChange(now.toISOString().split("T")[0]);
+            onTimeChange(now.toTimeString().slice(0, 5));
+          }}
+          className="shrink-0 bg-crimson/10 hover:bg-crimson/20 border border-crimson/30 text-crimson text-xs font-bold rounded-xl px-4 py-3.5 transition-all cursor-pointer">
+          Now
+        </button>
       </div>
 
       {error && (

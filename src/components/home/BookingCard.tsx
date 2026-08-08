@@ -21,17 +21,12 @@ export default function BookingCard() {
   const [mapsLoaded, setMapsLoaded] = useState(() => typeof window !== "undefined" && !!window.google?.maps?.places);
   const [pickup, setPickup] = useState<PlaceData | null>(null);
   const [dropoff, setDropoff] = useState<PlaceData | null>(null);
-  const [name, setName] = useState("");
-  const [phone, setPhone] = useState("");
-  const [date, setDate] = useState("");
-  const [time, setTime] = useState("");
-  const [vehicle, setVehicle] = useState<VehicleType>("car");
-  const [stops, setStops] = useState<PlaceData[]>([]);
+  const [name, setName] = useState(""); const [phone, setPhone] = useState("");
+  const [date, setDate] = useState(""); const [time, setTime] = useState("");
+  const [vehicle, setVehicle] = useState<VehicleType>("car"); const [stops, setStops] = useState<PlaceData[]>([]);
   const [result, setResult] = useState<{ distance: number; fare: number } | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [booked, setBooked] = useState(false);
-  const [saving, setSaving] = useState(false);
+  const [loading, setLoading] = useState(false); const [error, setError] = useState("");
+  const [booked, setBooked] = useState(false); const [saving, setSaving] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<"cash" | "card">("cash");
 
   const handleConfirm = async () => {
@@ -128,22 +123,33 @@ export default function BookingCard() {
           </div>
 
           {/* Date & Time */}
-          <div className="grid grid-cols-2 gap-2.5">
-            <div className={rowCls}>
-              <Calendar className="w-4 h-4 text-white/30 shrink-0" />
-              <label htmlFor="hero-date" className="sr-only">Date</label>
-              <input id="hero-date" type="date" value={date}
-                min={new Date().toISOString().split("T")[0]}
-                onChange={(e) => setDate(e.target.value)}
-                className={`${inputCls} dark-picker ${!date ? "text-white/35" : ""}`} />
+          <div className="flex items-center gap-2.5">
+            <div className="grid grid-cols-2 gap-2.5 flex-1">
+              <div className={rowCls}>
+                <Calendar className="w-4 h-4 text-white/30 shrink-0" />
+                <label htmlFor="hero-date" className="sr-only">Date</label>
+                <input id="hero-date" type="date" value={date}
+                  min={new Date().toISOString().split("T")[0]}
+                  onChange={(e) => setDate(e.target.value)}
+                  className={`${inputCls} dark-picker ${!date ? "text-white/35" : ""}`} />
+              </div>
+              <div className={rowCls}>
+                <Clock className="w-4 h-4 text-white/30 shrink-0" />
+                <label htmlFor="hero-time" className="sr-only">Time</label>
+                <input id="hero-time" type="time" value={time}
+                  onChange={(e) => setTime(e.target.value)}
+                  className={`${inputCls} dark-picker ${!time ? "text-white/35" : ""}`} />
+              </div>
             </div>
-            <div className={rowCls}>
-              <Clock className="w-4 h-4 text-white/30 shrink-0" />
-              <label htmlFor="hero-time" className="sr-only">Time</label>
-              <input id="hero-time" type="time" value={time}
-                onChange={(e) => setTime(e.target.value)}
-                className={`${inputCls} dark-picker ${!time ? "text-white/35" : ""}`} />
-            </div>
+            <button type="button" onClick={() => {
+                const now = new Date();
+                setDate(now.toISOString().split("T")[0]);
+                setTime(now.toTimeString().slice(0, 5));
+                setResult(null);
+              }}
+              className="shrink-0 bg-gold/20 hover:bg-gold/30 border border-gold/40 text-gold text-xs font-bold rounded-xl px-3 py-3 transition-all cursor-pointer">
+              Now
+            </button>
           </div>
         </div>
 
@@ -181,19 +187,10 @@ export default function BookingCard() {
 
       <AnimatePresence>
         {booked && result && pickup && dropoff && (
-          <SuccessModal
-            name={name} phone={phone}
-            pickup={pickup.address} dropoff={dropoff.address}
-            stops={stops.map((s) => s.address)}
-            date={date} time={time}
-            distance={result.distance} fare={result.fare}
-            fareType={paymentMethod === "cash" ? "meter" : "fixed"}
-            onClose={() => {
-              setBooked(false);
-              setName(""); setPhone(""); setDate(""); setTime("");
-              setPickup(null); setDropoff(null); setStops([]); setResult(null);
-            }}
-          />
+          <SuccessModal name={name} phone={phone} pickup={pickup.address} dropoff={dropoff.address}
+            stops={stops.map((s) => s.address)} date={date} time={time} distance={result.distance}
+            fare={result.fare} fareType={paymentMethod === "cash" ? "meter" : "fixed"}
+            onClose={() => { setBooked(false); setName(""); setPhone(""); setDate(""); setTime(""); setPickup(null); setDropoff(null); setStops([]); setResult(null); }} />
         )}
       </AnimatePresence>
     </>

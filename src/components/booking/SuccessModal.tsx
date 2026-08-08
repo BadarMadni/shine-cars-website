@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { CheckCircle, X, MapPin, Navigation, Calendar, Clock, Phone, User } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 interface SuccessModalProps {
   name: string;
@@ -20,13 +21,15 @@ interface SuccessModalProps {
 export default function SuccessModal({
   name, phone, pickup, dropoff, stops = [], date, time, distance, fare, fareType, onClose,
 }: SuccessModalProps) {
+  const router = useRouter();
+  const handleDone = () => { onClose(); router.push("/my-bookings"); };
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
-      onClick={onClose}
+      onClick={handleDone}
     >
       <motion.div
         initial={{ scale: 0.8, opacity: 0, y: 30 }}
@@ -110,7 +113,7 @@ export default function SuccessModal({
           <motion.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
-            onClick={onClose}
+            onClick={handleDone}
             className="w-full py-3.5 rounded-xl bg-gradient-to-r from-crimson to-crimson-dark text-white font-bold text-sm cursor-pointer"
           >
             Done
