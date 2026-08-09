@@ -31,7 +31,7 @@ export async function POST(req: NextRequest) {
   }
 
   const body = await req.json();
-  const { pickup, dropoff, stops, time, vehicle, fare, distance, days, name, phone } = body;
+  const { pickup, dropoff, stops, time, vehicle, fare, distance, days, name, phone, frequency, startDate, endDate } = body;
 
   if (!pickup || !dropoff || !time || !fare || !days?.length || !name || !phone) {
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
@@ -43,6 +43,8 @@ export async function POST(req: NextRequest) {
       vehicle: vehicle || "car",
       fare: parseFloat(fare), distance: parseFloat(distance) || 0,
       days: JSON.stringify(days), name, phone,
+      frequency: frequency || "weekly",
+      startDate: startDate || null, endDate: endDate || null,
       stops: stops?.length ? JSON.stringify(stops) : null,
     },
   });
