@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Repeat, MapPin, Navigation, Clock, User, Phone, CheckCircle, Calendar } from "lucide-react";
-import HeroAddressInput from "@/components/home/HeroAddressInput";
+import AddressInput from "@/components/booking/AddressInput";
 import { VEHICLES, type VehicleType, calculateFare } from "@/lib/fare";
 import { calcMultiSegmentDistance } from "@/lib/distanceCalc";
 
@@ -85,12 +85,12 @@ export default function RecurringBookingForm({ mapsLoaded }: { mapsLoaded: boole
             </div>
           </div>
 
-          <HeroAddressInput id="rec-pickup" placeholder="Pickup Location"
-            icon={<MapPin className="w-4 h-4 text-green-500" />} iconBg="bg-green-50"
-            ready={mapsLoaded} onSelect={(p) => { setPickup(p); setFare(null); }} />
-          <HeroAddressInput id="rec-dropoff" placeholder="Drop-off Location"
-            icon={<Navigation className="w-4 h-4 text-crimson" />} iconBg="bg-red-50"
-            ready={mapsLoaded} onSelect={(p) => { setDropoff(p); setFare(null); }} />
+          <AddressInput id="rec-pickup" label="Pickup" placeholder="Pickup Location"
+            icon={<MapPin className="w-4 h-4 text-green-500" />}
+            onPlaceSelect={(p) => { if (p.geometry?.location) { setPickup({ address: p.formatted_address || p.name || "", lat: p.geometry.location.lat(), lng: p.geometry.location.lng() }); setFare(null); } }} />
+          <AddressInput id="rec-dropoff" label="Drop-off" placeholder="Drop-off Location"
+            icon={<Navigation className="w-4 h-4 text-crimson" />}
+            onPlaceSelect={(p) => { if (p.geometry?.location) { setDropoff({ address: p.formatted_address || p.name || "", lat: p.geometry.location.lat(), lng: p.geometry.location.lng() }); setFare(null); } }} />
 
           <div className="grid grid-cols-2 gap-2.5">
             {(Object.entries(VEHICLES) as [VehicleType, typeof VEHICLES.car][]).map(([key, v]) => (
