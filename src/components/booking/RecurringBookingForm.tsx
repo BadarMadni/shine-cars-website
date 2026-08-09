@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Repeat, MapPin, Navigation, Clock, User, Phone, CheckCircle, Calendar } from "lucide-react";
 import AddressInput from "@/components/booking/AddressInput";
@@ -11,6 +12,7 @@ interface PlaceData { address: string; lat: number; lng: number }
 const DAYS = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"];
 
 export default function RecurringBookingForm({ mapsLoaded }: { mapsLoaded: boolean }) {
+  const router = useRouter();
   const [pickup, setPickup] = useState<PlaceData | null>(null);
   const [dropoff, setDropoff] = useState<PlaceData | null>(null);
   const [name, setName] = useState(""); const [phone, setPhone] = useState("");
@@ -186,7 +188,7 @@ export default function RecurringBookingForm({ mapsLoaded }: { mapsLoaded: boole
               <div className="w-16 h-16 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-4"><CheckCircle className="w-8 h-8 text-green-500" /></div>
               <h3 className="text-xl font-extrabold text-navy mb-2">Recurring Booking Created!</h3>
               <p className="text-navy/50 text-sm mb-4">Your ride is scheduled. Bookings will be generated automatically.</p>
-              <button onClick={() => setSuccess(false)} className="px-8 py-3 rounded-xl bg-gradient-to-r from-crimson to-crimson-dark text-white font-bold text-sm cursor-pointer">Done</button>
+              <button onClick={() => { setSuccess(false); router.push("/recurring"); }} className="px-8 py-3 rounded-xl bg-gradient-to-r from-crimson to-crimson-dark text-white font-bold text-sm cursor-pointer">Done</button>
             </motion.div>
           </motion.div>
         )}
