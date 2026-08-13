@@ -106,9 +106,9 @@ export default function BookingCard({ booking: b, index, expanded, onToggle }: {
             {new Date(b.createdAt).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}</span>
           <span className="flex items-center gap-1"><MapPin className="w-3 h-3" /> {b.distance.toFixed(0)} mi</span>
           {b.driver && <>
-            <span className="flex items-center gap-1 text-purple-400/70"><Car className="w-3 h-3" /> {b.driver.name}</span>
+            <span className="flex items-center gap-1.5 text-purple-400 font-semibold text-sm"><Car className="w-3.5 h-3.5" /> {b.driver.name}</span>
             {(b.driver.vehicleMake || b.driver.vehicleColor) && (
-              <span className="text-purple-400/50">{[b.driver.vehicleColor, b.driver.vehicleMake].filter(Boolean).join(" ")}</span>
+              <span className="text-purple-300/60 text-sm font-medium">{[b.driver.vehicleColor, b.driver.vehicleMake].filter(Boolean).join(" ")}</span>
             )}
           </>}
         </div>

@@ -20,7 +20,7 @@ interface Booking {
   paymentStatus: string;
   isRecurring?: boolean;
   createdAt: string;
-  driver?: { name: string; phone: string } | null;
+  driver?: { name: string; phone: string; vehicleMake?: string | null; vehicleColor?: string | null } | null;
 }
 
 interface StatusUpdate {
@@ -29,6 +29,7 @@ interface StatusUpdate {
   dropoff: string;
   oldStatus: string;
   newStatus: string;
+  driver?: { name: string; phone: string; vehicleMake?: string | null; vehicleColor?: string | null } | null;
 }
 
 export default function MyBookingsPage() {
@@ -48,12 +49,12 @@ export default function MyBookingsPage() {
         for (const b of newBookings) {
           const oldStatus = prevStatuses.current[b.id];
           if (oldStatus && oldStatus !== b.status) {
-            setStatusUpdate({ bookingId: b.id, pickup: b.pickup, dropoff: b.dropoff, oldStatus, newStatus: b.status });
+            setStatusUpdate({ bookingId: b.id, pickup: b.pickup, dropoff: b.dropoff, oldStatus, newStatus: b.status, driver: b.driver });
             break;
           }
           // New booking appeared (e.g. recurring cron) with non-pending status
           if (!oldStatus && b.status !== "pending") {
-            setStatusUpdate({ bookingId: b.id, pickup: b.pickup, dropoff: b.dropoff, oldStatus: "new", newStatus: b.status });
+            setStatusUpdate({ bookingId: b.id, pickup: b.pickup, dropoff: b.dropoff, oldStatus: "new", newStatus: b.status, driver: b.driver });
             break;
           }
         }

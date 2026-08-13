@@ -9,7 +9,7 @@ interface RecurringItem {
   id: string; pickup: string; dropoff: string; time: string; vehicle: string;
   fare: number; distance: number; days: string; name: string; phone: string;
   isActive: boolean; createdAt: string;
-  driver?: { name: string; phone: string } | null;
+  driver?: { name: string; phone: string; vehicleMake?: string | null; vehicleColor?: string | null } | null;
   bookings?: { status: string; date: string }[];
 }
 
@@ -26,6 +26,7 @@ const statusBadge: Record<string, { bg: string; dot: string }> = {
 
 interface StatusUpdate {
   bookingId: string; pickup: string; dropoff: string; oldStatus: string; newStatus: string;
+  driver?: { name: string; phone: string; vehicleMake?: string | null; vehicleColor?: string | null } | null;
 }
 
 export default function RecurringList() {
@@ -43,7 +44,7 @@ export default function RecurringList() {
       const recData = await recRes.json();
       const bookData = await bookRes.json();
       const newItems: RecurringItem[] = recData.items || [];
-      const bookings: { id: string; status: string; pickup: string; dropoff: string; isRecurring?: boolean }[] = bookData.bookings || [];
+      const bookings: { id: string; status: string; pickup: string; dropoff: string; isRecurring?: boolean; driver?: RecurringItem["driver"] }[] = bookData.bookings || [];
       const recurringBookings = bookings.filter((b) => b.isRecurring);
 
       // Detect booking status changes
@@ -51,11 +52,11 @@ export default function RecurringList() {
         for (const b of recurringBookings) {
           const old = prevStatuses.current[b.id];
           if (old && old !== b.status) {
-            setStatusUpdate({ bookingId: b.id, pickup: b.pickup, dropoff: b.dropoff, oldStatus: old, newStatus: b.status });
+            setStatusUpdate({ bookingId: b.id, pickup: b.pickup, dropoff: b.dropoff, oldStatus: old, newStatus: b.status, driver: b.driver });
             break;
           }
           if (!old && b.status !== "pending") {
-            setStatusUpdate({ bookingId: b.id, pickup: b.pickup, dropoff: b.dropoff, oldStatus: "new", newStatus: b.status });
+            setStatusUpdate({ bookingId: b.id, pickup: b.pickup, dropoff: b.dropoff, oldStatus: "new", newStatus: b.status, driver: b.driver });
             break;
           }
         }
@@ -70,7 +71,7 @@ export default function RecurringList() {
           const oldD = prevDrivers.current[item.id];
           const newD = item.driver?.name || null;
           if (oldD !== undefined && !oldD && newD) {
-            setStatusUpdate({ bookingId: item.id, pickup: item.pickup, dropoff: item.dropoff, oldStatus: "new", newStatus: "assigned" });
+            setStatusUpdate({ bookingId: item.id, pickup: item.pickup, dropoff: item.dropoff, oldStatus: "new", newStatus: "assigned", driver: item.driver });
             break;
           }
         }

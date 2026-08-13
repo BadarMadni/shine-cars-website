@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Car, MapPin, Navigation, CheckCircle2, Clock, UserCheck } from "lucide-react";
+import { X, Car, MapPin, Navigation, CheckCircle2, Clock, UserCheck, Phone, MessageCircle } from "lucide-react";
 
 interface StatusUpdate {
   bookingId: string;
@@ -9,6 +9,7 @@ interface StatusUpdate {
   dropoff: string;
   oldStatus: string;
   newStatus: string;
+  driver?: { name: string; phone: string; vehicleMake?: string | null; vehicleColor?: string | null } | null;
 }
 
 const STATUS_CONFIG: Record<string, { icon: typeof Car; color: string; bg: string; title: string; message: string }> = {
@@ -101,6 +102,33 @@ export default function StatusNotification({ update, onClose }: { update: Status
                     </div>
                   </div>
                 </div>
+
+                {/* Driver info */}
+                {update.driver && (
+                  <div className="bg-white/[0.04] rounded-xl p-3 border border-white/[0.06] mb-5">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-purple-500/20 ring-2 ring-purple-400/30 flex items-center justify-center">
+                        <Car className="w-5 h-5 text-purple-400" />
+                      </div>
+                      <div className="flex-1 text-left">
+                        <p className="text-white font-semibold text-sm">{update.driver.name}</p>
+                        {(update.driver.vehicleColor || update.driver.vehicleMake) && (
+                          <p className="text-purple-300/70 text-xs">{[update.driver.vehicleColor, update.driver.vehicleMake].filter(Boolean).join(" ")}</p>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex gap-2 mt-2.5" onClick={(e) => e.stopPropagation()}>
+                      <a href={`tel:${update.driver.phone}`}
+                        className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg bg-purple-500/15 border border-purple-400/20 text-purple-300 text-xs font-semibold">
+                        <Phone className="w-3 h-3" /> Call Driver
+                      </a>
+                      <a href={`https://wa.me/${update.driver.phone.replace(/[^0-9]/g, "")}`} target="_blank" rel="noopener noreferrer"
+                        className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg bg-green-500/15 border border-green-400/20 text-green-300 text-xs font-semibold">
+                        <MessageCircle className="w-3 h-3" /> WhatsApp
+                      </a>
+                    </div>
+                  </div>
+                )}
 
                 {/* Status badge */}
                 <div className="flex items-center justify-center gap-2 text-xs text-white/30">
