@@ -49,6 +49,8 @@ model Driver {
   id                String    @id @default(cuid())
   name              String
   phone             String
+  vehicleMake       String?
+  vehicleColor      String?
   bookings          Booking[]
   recurringBookings RecurringBooking[]
 }

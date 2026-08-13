@@ -23,7 +23,7 @@ export interface Booking {
   meterFare?: number | null;
   isRecurring?: boolean;
   createdAt: string;
-  driver?: { name: string; phone: string } | null;
+  driver?: { name: string; phone: string; vehicleMake?: string | null; vehicleColor?: string | null } | null;
 }
 
 export const STATUS_STYLES: Record<string, { bg: string; dot: string }> = {
@@ -105,7 +105,12 @@ export default function BookingCard({ booking: b, index, expanded, onToggle }: {
           <span className="flex items-center gap-1"><Calendar className="w-3 h-3" />
             {new Date(b.createdAt).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}</span>
           <span className="flex items-center gap-1"><MapPin className="w-3 h-3" /> {b.distance.toFixed(0)} mi</span>
-          {b.driver && <span className="flex items-center gap-1 text-purple-400/70"><Car className="w-3 h-3" /> {b.driver.name}</span>}
+          {b.driver && <>
+            <span className="flex items-center gap-1 text-purple-400/70"><Car className="w-3 h-3" /> {b.driver.name}</span>
+            {(b.driver.vehicleMake || b.driver.vehicleColor) && (
+              <span className="text-purple-400/50">{[b.driver.vehicleColor, b.driver.vehicleMake].filter(Boolean).join(" ")}</span>
+            )}
+          </>}
         </div>
         <DriverButtons driver={b.driver} />
       </div>
@@ -113,7 +118,7 @@ export default function BookingCard({ booking: b, index, expanded, onToggle }: {
   );
 }
 
-function DriverButtons({ driver }: { driver?: { name: string; phone: string } | null }) {
+function DriverButtons({ driver }: { driver?: { name: string; phone: string; vehicleMake?: string | null; vehicleColor?: string | null } | null }) {
   const phone = driver?.phone || "+441945243006";
   const waPhone = phone.replace(/[^0-9]/g, "");
   return (
