@@ -21,11 +21,20 @@ export default function InvoiceDetailView({ id }: { id: string }) {
   const justPaid = searchParams.get("paid") === "true";
 
   useEffect(() => {
-    fetch(`/api/invoices/${id}`).then((r) => r.json())
-      .then((d) => setInvoice(d.invoice || null))
-      .catch(() => {})
-      .finally(() => setLoading(false));
-  }, [id]);
+    const load = async () => {
+      // If returning from Stripe, confirm payment first
+      if (justPaid) {
+        try { await fetch(`/api/invoices/${id}/confirm`, { method: "POST" }); } catch {}
+      }
+      try {
+        const r = await fetch(`/api/invoices/${id}`);
+        const d = await r.json();
+        setInvoice(d.invoice || null);
+      } catch {}
+      setLoading(false);
+    };
+    load();
+  }, [id, justPaid]);
 
   const handlePay = async () => {
     setPaying(true);
