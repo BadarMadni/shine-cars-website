@@ -29,6 +29,10 @@ model Booking {
   driverId      String?
   stops         String?
   notes         String?
+  pickupDetails String?
+  dropoffDetails String?
+  eventPricingId String?
+  eventSurcharge Float?
   isRecurring   Boolean  @default(false)
   recurringId   String?
   createdAt     DateTime @default(now())
@@ -51,6 +55,7 @@ model Driver {
   phone             String
   vehicleMake       String?
   vehicleColor      String?
+  passengerLicense  Int?
   bookings          Booking[]
   recurringBookings RecurringBooking[]
 }
@@ -144,4 +149,17 @@ model InvoiceItem {
 
   @@index([invoiceId])
   @@index([bookingId])
+}
+
+model EventPricing {
+  id              String   @id @default(cuid())
+  name            String
+  startDate       String
+  startTime       String
+  endDate         String
+  endTime         String
+  increasePercent Float
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 }

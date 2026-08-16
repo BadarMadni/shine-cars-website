@@ -10,6 +10,9 @@ interface ConfirmBookingParams {
   vehicle: string;
   paymentMethod: "cash" | "card";
   fareType: "fixed" | "meter";
+  activeEvent?: { id: string; name: string; increasePercent: number } | null;
+  pickupDetails?: string;
+  dropoffDetails?: string;
 }
 
 /**
@@ -18,7 +21,7 @@ interface ConfirmBookingParams {
  * Returns true when booking is complete (cash), false when redirecting (card).
  */
 export async function confirmBooking(params: ConfirmBookingParams): Promise<boolean> {
-  const { result, pickup, dropoff, stops, name, phone, date, time, vehicle, paymentMethod, fareType } = params;
+  const { result, pickup, dropoff, stops, name, phone, date, time, vehicle, paymentMethod, fareType, activeEvent, pickupDetails, dropoffDetails } = params;
 
   try {
     if (paymentMethod === "card") {
@@ -28,6 +31,9 @@ export async function confirmBooking(params: ConfirmBookingParams): Promise<bool
         body: JSON.stringify({
           name, phone, pickup: pickup.address, dropoff: dropoff.address, stops,
           date, time, distance: result.distance, fare: result.fare, vehicle, fareType, source: "homepage",
+          eventPricingId: activeEvent?.id || null,
+          eventSurcharge: activeEvent ? Math.round((result.fare - result.fare / (1 + activeEvent.increasePercent / 100)) * 100) / 100 : null,
+          pickupDetails: pickupDetails || null, dropoffDetails: dropoffDetails || null,
         }),
       });
       const data = await res.json();
@@ -41,6 +47,9 @@ export async function confirmBooking(params: ConfirmBookingParams): Promise<bool
         name, phone, pickup: pickup.address, dropoff: dropoff.address, stops,
         date, time, distance: result.distance, fare: result.fare, vehicle,
         paymentMethod: "cash", fareType, source: "homepage",
+        eventPricingId: activeEvent?.id || null,
+        eventSurcharge: activeEvent ? Math.round((result.fare - result.fare / (1 + activeEvent.increasePercent / 100)) * 100) / 100 : null,
+        pickupDetails: pickupDetails || null, dropoffDetails: dropoffDetails || null,
       }),
     });
     return true;

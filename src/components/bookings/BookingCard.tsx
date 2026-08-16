@@ -11,6 +11,8 @@ export interface Booking {
   pickup: string;
   dropoff: string;
   stops?: string | null;
+  pickupDetails?: string | null;
+  dropoffDetails?: string | null;
   date: string;
   time: string;
   distance: number;
@@ -163,6 +165,8 @@ function RouteDisplay({ booking: b }: { booking: Booking }) {
           <div key={i}>
             <div className="text-white/30 text-[10px] uppercase tracking-widest font-medium">{p.label}</div>
             <div className="text-white text-xs sm:text-sm font-medium leading-snug line-clamp-2">{p.address}</div>
+            {i === 0 && b.pickupDetails && <div className="text-gold/70 text-[11px] italic mt-0.5">{b.pickupDetails}</div>}
+            {i === points.length - 1 && b.dropoffDetails && <div className="text-gold/70 text-[11px] italic mt-0.5">{b.dropoffDetails}</div>}
           </div>
         ))}
       </div>

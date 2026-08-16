@@ -22,6 +22,10 @@ interface BookingFormFieldsProps {
   onVehicleChange: (v: VehicleType) => void;
   onPickup: (place: google.maps.places.PlaceResult) => void;
   onDropoff: (place: google.maps.places.PlaceResult) => void;
+  onManualPickup?: (address: string) => void;
+  onManualDropoff?: (address: string) => void;
+  onPickupDetailsChange?: (details: string) => void;
+  onDropoffDetailsChange?: (details: string) => void;
   onStopSelect: (index: number, place: google.maps.places.PlaceResult) => void;
   onAddStop: () => void;
   onRemoveStop: (index: number) => void;
@@ -31,7 +35,8 @@ interface BookingFormFieldsProps {
 export default function BookingFormFields({
   name, phone, date, time, vehicle, error, loading, mapsLoaded, stopCount,
   onNameChange, onPhoneChange, onDateChange, onTimeChange, onVehicleChange,
-  onPickup, onDropoff, onStopSelect, onAddStop, onRemoveStop, onSubmit,
+  onPickup, onDropoff, onManualPickup, onManualDropoff, onPickupDetailsChange, onDropoffDetailsChange,
+  onStopSelect, onAddStop, onRemoveStop, onSubmit,
 }: BookingFormFieldsProps) {
   const fieldCls = "flex items-center gap-3 bg-white rounded-xl px-4 py-3.5 border border-gray-200 focus-within:border-crimson/50 transition-colors";
   const inputCls = "bg-transparent text-navy text-sm outline-none w-full placeholder:text-navy/35";
@@ -83,6 +88,8 @@ export default function BookingFormFields({
             placeholder="Enter pickup location"
             icon={<MapPin className="w-4 h-4 text-green-500" />}
             onPlaceSelect={onPickup}
+            onManualAddress={onManualPickup}
+            onDetailsChange={onPickupDetailsChange}
           />
           {Array.from({ length: stopCount }, (_, i) => (
             <div key={i} className="relative">
@@ -111,6 +118,8 @@ export default function BookingFormFields({
             placeholder="Enter drop-off location"
             icon={<Navigation className="w-4 h-4 text-crimson" />}
             onPlaceSelect={onDropoff}
+            onManualAddress={onManualDropoff}
+            onDetailsChange={onDropoffDetailsChange}
           />
         </>
       ) : (
@@ -147,7 +156,7 @@ export default function BookingFormFields({
               <Calendar className="w-4 h-4 text-navy/30 shrink-0" />
               <input id="book-date" type="date" value={date}
                 onChange={(e) => onDateChange(e.target.value)}
-                min={new Date().toISOString().split("T")[0]}
+                min={(() => { const n = new Date(); return `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,"0")}-${String(n.getDate()).padStart(2,"0")}`; })()}
                 className="bg-transparent text-navy text-sm outline-none w-full" />
             </div>
           </div>
@@ -163,7 +172,7 @@ export default function BookingFormFields({
         </div>
         <button type="button" onClick={() => {
             const now = new Date();
-            onDateChange(now.toISOString().split("T")[0]);
+            const y = now.getFullYear(), m = String(now.getMonth()+1).padStart(2,"0"), d = String(now.getDate()).padStart(2,"0"); onDateChange(`${y}-${m}-${d}`);
             onTimeChange(now.toTimeString().slice(0, 5));
           }}
           className="shrink-0 bg-crimson/10 hover:bg-crimson/20 border border-crimson/30 text-crimson text-xs font-bold rounded-xl px-4 py-3.5 transition-all cursor-pointer">

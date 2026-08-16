@@ -13,6 +13,9 @@ interface FareResultProps {
   fare: number;
   vehicle?: string;
   surcharge?: boolean;
+  activeEvent?: { id: string; name: string; increasePercent: number } | null;
+  pickupDetails?: string;
+  dropoffDetails?: string;
   name: string;
   phone: string;
   date: string;
@@ -21,7 +24,7 @@ interface FareResultProps {
 }
 
 export default function FareResult({
-  pickup, dropoff, stops = [], distanceMiles, fare, vehicle, surcharge, name, phone, date, time, onReset,
+  pickup, dropoff, stops = [], distanceMiles, fare, vehicle, surcharge, activeEvent, pickupDetails, dropoffDetails, name, phone, date, time, onReset,
 }: FareResultProps) {
   const ref = useRef<HTMLDivElement>(null);
   const [booked, setBooked] = useState(false);
@@ -42,6 +45,9 @@ export default function FareResult({
           body: JSON.stringify({
             name, phone, pickup, dropoff, stops, date, time,
             distance: distanceMiles, fare, vehicle, fareType: "fixed", source: "booking-page",
+            pickupDetails: pickupDetails || null, dropoffDetails: dropoffDetails || null,
+            eventPricingId: activeEvent?.id || null,
+            eventSurcharge: activeEvent ? Math.round((fare - fare / (1 + activeEvent.increasePercent / 100)) * 100) / 100 : null,
           }),
         });
         const data = await res.json();
@@ -58,6 +64,9 @@ export default function FareResult({
         body: JSON.stringify({
           name, phone, pickup, dropoff, stops, date, time,
           distance: distanceMiles, fare, paymentMethod: "cash", fareType: "meter", source: "booking-page",
+          pickupDetails: pickupDetails || null, dropoffDetails: dropoffDetails || null,
+          eventPricingId: activeEvent?.id || null,
+          eventSurcharge: activeEvent ? Math.round((fare - fare / (1 + activeEvent.increasePercent / 100)) * 100) / 100 : null,
         }),
       });
       setSaving(false);
@@ -97,54 +106,52 @@ export default function FareResult({
 
         <div className="border-t border-white/10 pt-5 mb-5 flex items-end justify-between">
           <div>
-            <div className="text-white/50 text-xs mb-1">{paymentMethod === "cash" ? "Estimated Range (Meter)" : "Estimated Fare"}</div>
-            {paymentMethod === "cash" ? (
-              <div className="text-4xl font-extrabold gradient-text">
-                &pound;{(fare * 0.9).toFixed(2)} – £{(fare * 1.1).toFixed(2)}
-              </div>
+            {fare === 0 ? (
+              <>
+                <div className="text-white/50 text-xs mb-1">Fare</div>
+                <div className="text-2xl font-extrabold text-amber-400">Fare confirmed by dispatch</div>
+                <div className="text-white/40 text-xs mt-1">Our team will confirm the fare for your route</div>
+              </>
             ) : (
-              <div className="text-4xl font-extrabold gradient-text">
-                &pound;{fare.toFixed(2)}
-              </div>
-            )}
-            {paymentMethod === "cash" && (
-              <div className="text-orange-400/80 text-xs mt-1">
-                Final fare based on actual meter distance
-              </div>
-            )}
-            {surcharge && (
-              <div className="text-yellow-400/80 text-xs mt-1">
-                Includes out-of-area surcharge
-              </div>
+              <>
+                <div className="text-white/50 text-xs mb-1">{paymentMethod === "cash" ? "Estimated Range (Meter)" : "Estimated Fare"}</div>
+                {paymentMethod === "cash" ? (
+                  <div className="text-4xl font-extrabold gradient-text">&pound;{(fare * 0.9).toFixed(2)} – £{(fare * 1.1).toFixed(2)}</div>
+                ) : (
+                  <div className="text-4xl font-extrabold gradient-text">&pound;{fare.toFixed(2)}</div>
+                )}
+                {paymentMethod === "cash" && <div className="text-orange-400/80 text-xs mt-1">Final fare based on actual meter distance</div>}
+                {surcharge && <div className="text-yellow-400/80 text-xs mt-1">Includes out-of-area surcharge</div>}
+                {activeEvent && (
+                  <div className="flex items-center gap-2 mt-2">
+                    <span className="text-amber-400 text-xs font-bold">{activeEvent.name}</span>
+                    <span className="bg-amber-500/20 text-amber-400 text-[10px] font-bold px-1.5 py-0.5 rounded-full">+{activeEvent.increasePercent}% applied</span>
+                  </div>
+                )}
+              </>
             )}
           </div>
-          <div className="text-white/40 text-xs text-right max-w-[180px]">
-            Final fare may vary based on traffic, waiting time, and route changes.
-          </div>
+          {fare > 0 && <div className="text-white/40 text-xs text-right max-w-[180px]">Final fare may vary based on traffic, waiting time, and route changes.</div>}
         </div>
 
-        {/* Payment Method */}
+        {fare > 0 && (
         <div className="mb-5">
           <p className="text-white/50 text-xs mb-2">Payment Method</p>
           <div className="grid grid-cols-2 gap-3">
             <button type="button" onClick={() => setPaymentMethod("cash")}
               className={`flex items-center justify-center gap-2 rounded-xl px-4 py-3.5 border text-sm font-medium transition-all cursor-pointer ${
-                paymentMethod === "cash"
-                  ? "bg-gold/20 border-gold/50 text-gold"
-                  : "bg-white/10 border-white/10 text-white/60 hover:border-white/25"
+                paymentMethod === "cash" ? "bg-gold/20 border-gold/50 text-gold" : "bg-white/10 border-white/10 text-white/60 hover:border-white/25"
               }`}>
               <Banknote className="w-4 h-4" /> Cash
             </button>
             <button type="button" onClick={() => setPaymentMethod("card")}
               className={`flex items-center justify-center gap-2 rounded-xl px-4 py-3.5 border text-sm font-medium transition-all cursor-pointer ${
-                paymentMethod === "card"
-                  ? "bg-gold/20 border-gold/50 text-gold"
-                  : "bg-white/10 border-white/10 text-white/60 hover:border-white/25"
+                paymentMethod === "card" ? "bg-gold/20 border-gold/50 text-gold" : "bg-white/10 border-white/10 text-white/60 hover:border-white/25"
               }`}>
               <CreditCard className="w-4 h-4" /> Card
             </button>
           </div>
-        </div>
+        </div>)}
 
         <motion.button
           whileHover={{ scale: 1.02 }}
