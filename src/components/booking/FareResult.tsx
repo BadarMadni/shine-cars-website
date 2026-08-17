@@ -122,12 +122,6 @@ export default function FareResult({
                 )}
                 {paymentMethod === "cash" && <div className="text-orange-400/80 text-xs mt-1">Final fare based on actual meter distance</div>}
                 {surcharge && <div className="text-yellow-400/80 text-xs mt-1">Includes out-of-area surcharge</div>}
-                {activeEvent && (
-                  <div className="flex items-center gap-2 mt-2">
-                    <span className="text-amber-400 text-xs font-bold">{activeEvent.name}</span>
-                    <span className="bg-amber-500/20 text-amber-400 text-[10px] font-bold px-1.5 py-0.5 rounded-full">+{activeEvent.increasePercent}% applied</span>
-                  </div>
-                )}
               </>
             )}
           </div>

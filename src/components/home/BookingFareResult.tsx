@@ -40,12 +40,6 @@ export default function BookingFareResult({
         </div>
       )}
 
-      {activeEvent && (
-        <div className="flex items-center gap-2 text-amber-400/90 text-xs">
-          <span className="font-bold">{activeEvent.name}</span>
-          <span className="bg-amber-500/20 text-amber-400 text-[10px] font-bold px-1.5 py-0.5 rounded-full">+{activeEvent.increasePercent}% applied</span>
-        </div>
-      )}
 
       <div className="flex items-center gap-2 mb-1">
         <PoundSterling className="w-5 h-5 text-gold" />
