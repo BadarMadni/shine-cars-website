@@ -36,7 +36,13 @@ export default function AddressInput({
   }, [onPlaceSelect, manual]);
 
   const toggleManual = () => {
-    setManual((m) => !m);
+    setManual((m) => {
+      if (!m && inputRef.current?.value.trim()) {
+        // Switching TO manual — sync existing text to parent
+        onManualAddress?.(inputRef.current.value.trim());
+      }
+      return !m;
+    });
     acRef.current = null;
     setDetails("");
     onDetailsChange?.("");
