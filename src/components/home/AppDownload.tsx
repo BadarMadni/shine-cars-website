@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { motion } from "framer-motion";
 import { Smartphone, ArrowRight } from "lucide-react";
 import AnimatedSection from "@/components/ui/AnimatedSection";
@@ -60,16 +61,15 @@ export default function AppDownload() {
                 transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
                 className="relative"
               >
-                <div className="w-56 h-[420px] rounded-[2.5rem] bg-gradient-to-b from-white/10 to-white/5 border-2 border-white/20 p-3 backdrop-blur-sm">
-                  <div className="w-full h-full rounded-[2rem] bg-gradient-to-b from-navy-light to-navy flex flex-col items-center justify-center gap-4 relative overflow-hidden">
-                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-20 h-6 bg-navy rounded-b-2xl" />
-                    <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-crimson to-gold flex items-center justify-center">
-                      <span className="text-white font-extrabold text-xl">SC</span>
-                    </div>
-                    <span className="text-white font-bold">Shine Cars</span>
-                    <span className="text-white/60 text-xs">Ride Safe, Ride Smart</span>
-                    <div className="w-3/4 h-2 bg-white/10 rounded-full mt-4" />
-                    <div className="w-1/2 h-2 bg-white/10 rounded-full" />
+                <div className="w-56 h-[460px] rounded-[2.5rem] bg-gradient-to-b from-white/10 to-white/5 border-2 border-white/20 p-2.5 backdrop-blur-sm">
+                  <div className="w-full h-full rounded-[2rem] overflow-hidden relative">
+                    <Image
+                      src="/images/app-screenshot.png"
+                      alt="Shine Cars Mobile App"
+                      fill
+                      className="object-cover object-top"
+                      sizes="224px"
+                    />
                   </div>
                 </div>
                 {/* Glow */}
