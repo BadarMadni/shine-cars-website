@@ -28,6 +28,7 @@ export default function BookingContent() {
   const [loading, setLoading] = useState(false); const [error, setError] = useState("");
   const [activeEvent, setActiveEvent] = useState<{ id: string; name: string; increasePercent: number } | null>(null);
   const [pickupDetails, setPickupDetails] = useState(""); const [dropoffDetails, setDropoffDetails] = useState("");
+  const [isUrgent, setIsUrgent] = useState(false);
 
   // Fetch active event pricing when date/time changes (same pattern as dispatch)
   useEffect(() => {
@@ -117,6 +118,7 @@ export default function BookingContent() {
                 onPickup={handlePickup} onDropoff={handleDropoff}
                 onManualPickup={handleManualPickup} onManualDropoff={handleManualDropoff}
                 onPickupDetailsChange={setPickupDetails} onDropoffDetailsChange={setDropoffDetails}
+                isUrgent={isUrgent} onUrgentChange={setIsUrgent}
                 onStopSelect={handleStopSelect}
                 onAddStop={() => setStops((s) => [...s, { address: "", lat: 0, lng: 0 }])}
                 onRemoveStop={(i) => { setStops((s) => s.filter((_, j) => j !== i)); setBaseFareResult(null); }} onSubmit={getQuote} />
@@ -125,6 +127,7 @@ export default function BookingContent() {
                   distanceMiles={result.distance} fare={result.fare} vehicle={VEHICLES[vehicle].label}
                   surcharge={isOutsideOfficeRadius(pickup.lat, pickup.lng)} activeEvent={activeEvent}
                   pickupDetails={pickupDetails} dropoffDetails={dropoffDetails}
+                  isUrgent={isUrgent}
                   name={name} phone={phone} date={date} time={time}
                   onReset={() => { setName(""); setPhone(""); setDate(""); setTime(""); setPickup(null); setDropoff(null); setStops([]); setBaseFareResult(null); }} />)}
             </div>)}

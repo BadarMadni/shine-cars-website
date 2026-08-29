@@ -13,6 +13,7 @@ interface ConfirmBookingParams {
   activeEvent?: { id: string; name: string; increasePercent: number } | null;
   pickupDetails?: string;
   dropoffDetails?: string;
+  isUrgent?: boolean;
 }
 
 /**
@@ -21,7 +22,7 @@ interface ConfirmBookingParams {
  * Returns true when booking is complete (cash), false when redirecting (card).
  */
 export async function confirmBooking(params: ConfirmBookingParams): Promise<boolean> {
-  const { result, pickup, dropoff, stops, name, phone, date, time, vehicle, paymentMethod, fareType, activeEvent, pickupDetails, dropoffDetails } = params;
+  const { result, pickup, dropoff, stops, name, phone, date, time, vehicle, paymentMethod, fareType, activeEvent, pickupDetails, dropoffDetails, isUrgent } = params;
 
   try {
     if (paymentMethod === "card") {
@@ -31,6 +32,7 @@ export async function confirmBooking(params: ConfirmBookingParams): Promise<bool
         body: JSON.stringify({
           name, phone, pickup: pickup.address, dropoff: dropoff.address, stops,
           date, time, distance: result.distance, fare: result.fare, vehicle, fareType, source: "homepage",
+          isUrgent: isUrgent || false,
           eventPricingId: activeEvent?.id || null,
           eventSurcharge: activeEvent ? Math.round((result.fare - result.fare / (1 + activeEvent.increasePercent / 100)) * 100) / 100 : null,
           pickupDetails: pickupDetails || null, dropoffDetails: dropoffDetails || null,
@@ -47,6 +49,7 @@ export async function confirmBooking(params: ConfirmBookingParams): Promise<bool
         name, phone, pickup: pickup.address, dropoff: dropoff.address, stops,
         date, time, distance: result.distance, fare: result.fare, vehicle,
         paymentMethod: "cash", fareType, source: "homepage",
+        isUrgent: isUrgent || false,
         eventPricingId: activeEvent?.id || null,
         eventSurcharge: activeEvent ? Math.round((result.fare - result.fare / (1 + activeEvent.increasePercent / 100)) * 100) / 100 : null,
         pickupDetails: pickupDetails || null, dropoffDetails: dropoffDetails || null,

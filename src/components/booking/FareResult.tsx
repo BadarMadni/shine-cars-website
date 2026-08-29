@@ -16,6 +16,7 @@ interface FareResultProps {
   activeEvent?: { id: string; name: string; increasePercent: number } | null;
   pickupDetails?: string;
   dropoffDetails?: string;
+  isUrgent?: boolean;
   name: string;
   phone: string;
   date: string;
@@ -24,7 +25,7 @@ interface FareResultProps {
 }
 
 export default function FareResult({
-  pickup, dropoff, stops = [], distanceMiles, fare, vehicle, surcharge, activeEvent, pickupDetails, dropoffDetails, name, phone, date, time, onReset,
+  pickup, dropoff, stops = [], distanceMiles, fare, vehicle, surcharge, activeEvent, pickupDetails, dropoffDetails, isUrgent, name, phone, date, time, onReset,
 }: FareResultProps) {
   const ref = useRef<HTMLDivElement>(null);
   const [booked, setBooked] = useState(false);
@@ -45,6 +46,7 @@ export default function FareResult({
           body: JSON.stringify({
             name, phone, pickup, dropoff, stops, date, time,
             distance: distanceMiles, fare, vehicle, fareType: "fixed", source: "booking-page",
+            isUrgent: isUrgent || false,
             pickupDetails: pickupDetails || null, dropoffDetails: dropoffDetails || null,
             eventPricingId: activeEvent?.id || null,
             eventSurcharge: activeEvent ? Math.round((fare - fare / (1 + activeEvent.increasePercent / 100)) * 100) / 100 : null,
@@ -64,6 +66,7 @@ export default function FareResult({
         body: JSON.stringify({
           name, phone, pickup, dropoff, stops, date, time,
           distance: distanceMiles, fare, paymentMethod: "cash", fareType: "meter", source: "booking-page",
+          isUrgent: isUrgent || false,
           pickupDetails: pickupDetails || null, dropoffDetails: dropoffDetails || null,
           eventPricingId: activeEvent?.id || null,
           eventSurcharge: activeEvent ? Math.round((fare - fare / (1 + activeEvent.increasePercent / 100)) * 100) / 100 : null,

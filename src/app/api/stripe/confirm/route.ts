@@ -47,6 +47,7 @@ export async function POST(req: NextRequest) {
         paymentStatus: "paid",
         stops: m.stops || null,
         customerId: m.customerId || undefined,
+        isUrgent: m.isUrgent === "true",
         notes: `stripe:${sessionId}`,
       },
     });

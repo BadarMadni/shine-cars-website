@@ -1,6 +1,6 @@
 "use client";
 
-import { MapPin, Navigation, User, Phone, Calendar, Clock, ArrowRight, Plus, X, CircleDot } from "lucide-react";
+import { MapPin, Navigation, User, Phone, Calendar, Clock, ArrowRight, Plus, X, CircleDot, AlertTriangle } from "lucide-react";
 import { motion } from "framer-motion";
 import AddressInput from "@/components/booking/AddressInput";
 import { VEHICLES, type VehicleType } from "@/lib/fare";
@@ -29,6 +29,8 @@ interface BookingFormFieldsProps {
   onStopSelect: (index: number, place: google.maps.places.PlaceResult) => void;
   onAddStop: () => void;
   onRemoveStop: (index: number) => void;
+  isUrgent?: boolean;
+  onUrgentChange?: (v: boolean) => void;
   onSubmit: () => void;
 }
 
@@ -36,6 +38,7 @@ export default function BookingFormFields({
   name, phone, date, time, vehicle, error, loading, mapsLoaded, stopCount,
   onNameChange, onPhoneChange, onDateChange, onTimeChange, onVehicleChange,
   onPickup, onDropoff, onManualPickup, onManualDropoff, onPickupDetailsChange, onDropoffDetailsChange,
+  isUrgent, onUrgentChange,
   onStopSelect, onAddStop, onRemoveStop, onSubmit,
 }: BookingFormFieldsProps) {
   const fieldCls = "flex items-center gap-3 bg-white rounded-xl px-4 py-3.5 border border-gray-200 focus-within:border-crimson/50 transition-colors";
@@ -179,6 +182,20 @@ export default function BookingFormFields({
           Now
         </button>
       </div>
+
+      {/* Urgent toggle */}
+      {onUrgentChange && (
+        <button type="button" onClick={() => onUrgentChange(!isUrgent)}
+          className={`flex items-center gap-2.5 w-full rounded-xl px-4 py-3.5 border text-sm font-medium transition-all cursor-pointer ${
+            isUrgent ? "bg-red-50 border-red-400 text-red-600" : "bg-white border-gray-200 text-navy/50 hover:border-red-300"
+          }`}>
+          <AlertTriangle className={`w-4 h-4 shrink-0 ${isUrgent ? "text-red-500" : "text-navy/30"}`} />
+          <span>Urgent Booking</span>
+          <div className={`ml-auto w-9 h-5 rounded-full transition-colors ${isUrgent ? "bg-red-500" : "bg-gray-300"}`}>
+            <div className={`w-4 h-4 bg-white rounded-full mt-0.5 transition-transform shadow ${isUrgent ? "translate-x-4.5" : "translate-x-0.5"}`} />
+          </div>
+        </button>
+      )}
 
       {error && (
         <p className="text-crimson text-sm font-medium">{error}</p>

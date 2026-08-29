@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Script from "next/script";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight, MapPin, Navigation, User, Phone, Calendar, Clock, Plus, X, CircleDot } from "lucide-react";
+import { ArrowRight, MapPin, Navigation, User, Phone, Calendar, Clock, Plus, X, CircleDot, AlertTriangle } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { calculateFare, isSundayOrHoliday, VEHICLES, type VehicleType } from "@/lib/fare";
 import { calcMultiSegmentDistance } from "@/lib/distanceCalc";
@@ -31,12 +31,13 @@ export default function BookingCard() {
   const [paymentMethod, setPaymentMethod] = useState<"cash" | "card">("cash");
   const [activeEvent, setActiveEvent] = useState<ActiveEvent | null>(null);
   const [pickupDetails, setPickupDetails] = useState(""); const [dropoffDetails, setDropoffDetails] = useState("");
+  const [isUrgent, setIsUrgent] = useState(false);
 
   const handleConfirm = async () => {
     if (!result || !pickup || !dropoff) return;
     setSaving(true);
     const fareType = paymentMethod === "cash" ? "meter" : "fixed";
-    const done = await confirmBooking({ result, pickup, dropoff, stops: stops.map((s) => s.address), name, phone, date, time, vehicle, paymentMethod, fareType, activeEvent, pickupDetails, dropoffDetails });
+    const done = await confirmBooking({ result, pickup, dropoff, stops: stops.map((s) => s.address), name, phone, date, time, vehicle, paymentMethod, fareType, activeEvent, pickupDetails, dropoffDetails, isUrgent });
     setSaving(false);
     if (done) setBooked(true);
   };
@@ -101,6 +102,17 @@ export default function BookingCard() {
                 <span>{v.label}</span><span className="text-xs opacity-60">Up to {v.passengers}</span>
               </button>))}
           </div>
+          {/* Urgent toggle */}
+          <button type="button" onClick={() => setIsUrgent(!isUrgent)}
+            className={`flex items-center gap-2.5 w-full rounded-xl px-4 py-3 border text-sm font-medium transition-all cursor-pointer ${
+              isUrgent ? "bg-red-500/20 border-red-400/50 text-red-400" : "bg-white/10 border-white/10 text-white/50 hover:border-red-400/30"
+            }`}>
+            <AlertTriangle className={`w-4 h-4 shrink-0 ${isUrgent ? "text-red-400" : "text-white/30"}`} />
+            <span>Urgent Booking</span>
+            <div className={`ml-auto w-9 h-5 rounded-full transition-colors ${isUrgent ? "bg-red-500" : "bg-white/20"}`}>
+              <div className={`w-4 h-4 bg-white rounded-full mt-0.5 transition-transform shadow ${isUrgent ? "translate-x-4.5" : "translate-x-0.5"}`} />
+            </div>
+          </button>
           <div className="flex items-center gap-2.5">
             <div className="grid grid-cols-2 gap-2.5 flex-1">
               <div className={rowCls}><Calendar className="w-4 h-4 text-white/30 shrink-0" /><label htmlFor="hero-date" className="sr-only">Date</label>
