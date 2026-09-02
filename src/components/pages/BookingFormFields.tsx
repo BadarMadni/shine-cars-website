@@ -1,6 +1,6 @@
 "use client";
 
-import { MapPin, Navigation, User, Phone, Calendar, Clock, ArrowRight, Plus, X, CircleDot, AlertTriangle } from "lucide-react";
+import { MapPin, Navigation, User, Phone, Calendar, Clock, ArrowRight, Plus, X, CircleDot, AlertTriangle, Building2 } from "lucide-react";
 import { motion } from "framer-motion";
 import AddressInput from "@/components/booking/AddressInput";
 import { VEHICLES, type VehicleType } from "@/lib/fare";
@@ -26,6 +26,8 @@ interface BookingFormFieldsProps {
   onManualDropoff?: (address: string) => void;
   onPickupDetailsChange?: (details: string) => void;
   onDropoffDetailsChange?: (details: string) => void;
+  buildingInfo?: string;
+  onBuildingInfoChange?: (v: string) => void;
   onStopSelect: (index: number, place: google.maps.places.PlaceResult) => void;
   onAddStop: () => void;
   onRemoveStop: (index: number) => void;
@@ -38,6 +40,7 @@ export default function BookingFormFields({
   name, phone, date, time, vehicle, error, loading, mapsLoaded, stopCount,
   onNameChange, onPhoneChange, onDateChange, onTimeChange, onVehicleChange,
   onPickup, onDropoff, onManualPickup, onManualDropoff, onPickupDetailsChange, onDropoffDetailsChange,
+  buildingInfo, onBuildingInfoChange,
   isUrgent, onUrgentChange,
   onStopSelect, onAddStop, onRemoveStop, onSubmit,
 }: BookingFormFieldsProps) {
@@ -94,6 +97,16 @@ export default function BookingFormFields({
             onManualAddress={onManualPickup}
             onDetailsChange={onPickupDetailsChange}
           />
+          {onBuildingInfoChange && (
+            <div>
+              <label htmlFor="book-building" className="block text-navy/70 text-sm font-medium mb-1.5">Building / House Info</label>
+              <div className={fieldCls}>
+                <Building2 className="w-4 h-4 text-amber-500 shrink-0" />
+                <input id="book-building" type="text" value={buildingInfo || ""} onChange={(e) => onBuildingInfoChange(e.target.value)}
+                  placeholder="House number, flat, building name (optional)" className={inputCls} />
+              </div>
+            </div>
+          )}
           {Array.from({ length: stopCount }, (_, i) => (
             <div key={i} className="relative">
               <AddressInput

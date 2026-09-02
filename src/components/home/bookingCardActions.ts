@@ -13,6 +13,7 @@ interface ConfirmBookingParams {
   activeEvent?: { id: string; name: string; increasePercent: number } | null;
   pickupDetails?: string;
   dropoffDetails?: string;
+  buildingInfo?: string;
   isUrgent?: boolean;
 }
 
@@ -22,7 +23,7 @@ interface ConfirmBookingParams {
  * Returns true when booking is complete (cash), false when redirecting (card).
  */
 export async function confirmBooking(params: ConfirmBookingParams): Promise<boolean> {
-  const { result, pickup, dropoff, stops, name, phone, date, time, vehicle, paymentMethod, fareType, activeEvent, pickupDetails, dropoffDetails, isUrgent } = params;
+  const { result, pickup, dropoff, stops, name, phone, date, time, vehicle, paymentMethod, fareType, activeEvent, pickupDetails, dropoffDetails, buildingInfo, isUrgent } = params;
 
   try {
     if (paymentMethod === "card") {
@@ -35,7 +36,7 @@ export async function confirmBooking(params: ConfirmBookingParams): Promise<bool
           isUrgent: isUrgent || false,
           eventPricingId: activeEvent?.id || null,
           eventSurcharge: activeEvent ? Math.round((result.fare - result.fare / (1 + activeEvent.increasePercent / 100)) * 100) / 100 : null,
-          pickupDetails: pickupDetails || null, dropoffDetails: dropoffDetails || null,
+          pickupDetails: pickupDetails || null, dropoffDetails: dropoffDetails || null, buildingInfo: buildingInfo || null,
         }),
       });
       const data = await res.json();

@@ -48,6 +48,9 @@ export async function POST(req: NextRequest) {
         stops: m.stops || null,
         customerId: m.customerId || undefined,
         isUrgent: m.isUrgent === "true",
+        pickupDetails: m.pickupDetails || null,
+        dropoffDetails: m.dropoffDetails || null,
+        buildingInfo: m.buildingInfo || null,
         notes: `stripe:${sessionId}`,
       },
     });

@@ -31,13 +31,14 @@ export default function BookingCard() {
   const [paymentMethod, setPaymentMethod] = useState<"cash" | "card">("cash");
   const [activeEvent, setActiveEvent] = useState<ActiveEvent | null>(null);
   const [pickupDetails, setPickupDetails] = useState(""); const [dropoffDetails, setDropoffDetails] = useState("");
+  const [buildingInfo, setBuildingInfo] = useState("");
   const [isUrgent, setIsUrgent] = useState(false);
 
   const handleConfirm = async () => {
     if (!result || !pickup || !dropoff) return;
     setSaving(true);
     const fareType = paymentMethod === "cash" ? "meter" : "fixed";
-    const done = await confirmBooking({ result, pickup, dropoff, stops: stops.map((s) => s.address), name, phone, date, time, vehicle, paymentMethod, fareType, activeEvent, pickupDetails, dropoffDetails, isUrgent });
+    const done = await confirmBooking({ result, pickup, dropoff, stops: stops.map((s) => s.address), name, phone, date, time, vehicle, paymentMethod, fareType, activeEvent, pickupDetails, dropoffDetails, buildingInfo, isUrgent });
     setSaving(false);
     if (done) setBooked(true);
   };
@@ -83,6 +84,8 @@ export default function BookingCard() {
           </div>
           <HeroAddressInput id="hero-pickup" placeholder="Pickup Location" icon={<MapPin className="w-4 h-4 text-green-400" />} iconBg="bg-green-500/20"
             ready={mapsLoaded} onSelect={(p) => { setPickup(p); setResult(null); }} onDetailsChange={setPickupDetails} />
+          <div className={rowCls}><MapPin className="w-4 h-4 text-amber-400 shrink-0" /><label htmlFor="hero-building" className="sr-only">Building / House Info</label>
+            <input id="hero-building" type="text" placeholder="Building / House / Flat Info (optional)" value={buildingInfo} onChange={(e) => setBuildingInfo(e.target.value)} className={inputCls} /></div>
           {stops.map((_, i) => (
             <div key={i} className="relative">
               <HeroAddressInput id={`hero-stop-${i}`} placeholder={`Stop ${i + 1}`} icon={<CircleDot className="w-4 h-4 text-amber-400" />} iconBg="bg-amber-500/20"
