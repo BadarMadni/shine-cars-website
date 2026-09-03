@@ -71,7 +71,7 @@ export default function BookingCard({ booking: b, index, expanded, onToggle }: {
           <div className="flex items-center gap-2 sm:gap-3 shrink-0">
             <span className="text-gold font-bold text-base sm:text-lg">
               {b.fareType === "meter" && !b.meterFare
-                ? `£${(b.fare * 0.9).toFixed(2)} – £${(b.fare * 1.1).toFixed(2)}`
+                ? `£${b.fare.toFixed(2)} – £${(b.fare * 1.1).toFixed(2)}`
                 : `£${(b.meterFare ?? b.fare).toFixed(2)}`}
             </span>
             <ChevronDown className={`w-4 h-4 text-white/30 transition-transform duration-300 ${expanded ? "rotate-180" : ""}`} />

@@ -120,7 +120,7 @@ export default function FareResult({
               <>
                 <div className="text-white/50 text-xs mb-1">{paymentMethod === "cash" ? "Estimated Range (Meter)" : "Estimated Fare"}</div>
                 {paymentMethod === "cash" ? (
-                  <div className="text-4xl font-extrabold gradient-text">&pound;{(fare * 0.9).toFixed(2)} – £{(fare * 1.1).toFixed(2)}</div>
+                  <div className="text-4xl font-extrabold gradient-text">&pound;{fare.toFixed(2)} – £{(fare * 1.1).toFixed(2)}</div>
                 ) : (
                   <div className="text-4xl font-extrabold gradient-text">&pound;{fare.toFixed(2)}</div>
                 )}

@@ -47,7 +47,7 @@ export default function BookingFareResult({
           <span className="text-xl font-bold text-white/70">Fare confirmed by dispatch</span>
         ) : paymentMethod === "cash" ? (
           <span className="text-3xl font-extrabold gradient-text">
-            &pound;{(result.fare * 0.9).toFixed(2)} – £{(result.fare * 1.1).toFixed(2)}
+            &pound;{result.fare.toFixed(2)} – £{(result.fare * 1.1).toFixed(2)}
           </span>
         ) : (
           <span className="text-3xl font-extrabold gradient-text">
