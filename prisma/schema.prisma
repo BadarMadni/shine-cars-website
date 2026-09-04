@@ -34,7 +34,8 @@ model Booking {
   buildingInfo   String?
   eventPricingId String?
   eventSurcharge Float?
-  isUrgent      Boolean  @default(false)
+  isPriority    Boolean  @default(false)
+  priorityCharge Float?
   isRecurring   Boolean  @default(false)
   recurringId   String?
   createdAt     DateTime @default(now())
@@ -151,6 +152,12 @@ model InvoiceItem {
 
   @@index([invoiceId])
   @@index([bookingId])
+}
+
+model SiteSetting {
+  id    String @id @default(cuid())
+  key   String @unique
+  value String
 }
 
 model EventPricing {

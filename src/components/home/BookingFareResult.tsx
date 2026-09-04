@@ -15,6 +15,8 @@ interface BookingFareResultProps {
   onConfirm: () => void;
   saving: boolean;
   activeEvent?: { name: string; increasePercent: number } | null;
+  isPriority?: boolean;
+  priorityCharge?: number;
 }
 
 export default function BookingFareResult({
@@ -25,7 +27,10 @@ export default function BookingFareResult({
   onConfirm,
   saving,
   activeEvent,
+  isPriority,
+  priorityCharge = 0,
 }: BookingFareResultProps) {
+  const displayFare = result.fare + priorityCharge;
   return (
     <div className="mt-4 pt-4 border-t border-white/10 space-y-2">
       {result.distance > 0 && (
@@ -47,16 +52,19 @@ export default function BookingFareResult({
           <span className="text-xl font-bold text-white/70">Fare confirmed by dispatch</span>
         ) : paymentMethod === "cash" ? (
           <span className="text-3xl font-extrabold gradient-text">
-            &pound;{result.fare.toFixed(2)} – £{(result.fare * 1.1).toFixed(2)}
+            &pound;{displayFare.toFixed(2)} – £{(displayFare * 1.1).toFixed(2)}
           </span>
         ) : (
           <span className="text-3xl font-extrabold gradient-text">
-            &pound;{result.fare.toFixed(2)}
+            &pound;{displayFare.toFixed(2)}
           </span>
         )}
       </div>
       {result.fare === 0 && (
         <p className="text-white/40 text-xs mb-2">Manual address — our team will confirm your fare</p>
+      )}
+      {priorityCharge > 0 && (
+        <p className="text-orange-400/80 text-xs mb-1">Includes +£{priorityCharge.toFixed(2)} priority charge</p>
       )}
       {result.fare > 0 && paymentMethod === "cash" && (
         <p className="text-white/40 text-xs mb-2">Meter fare — final amount based on actual distance</p>

@@ -5,7 +5,7 @@ import { verifyToken, COOKIE_NAME } from "@/lib/auth";
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { name, phone, pickup, dropoff, stops, date, time, distance, fare, vehicle, source, paymentMethod, fareType, eventPricingId, eventSurcharge, pickupDetails, dropoffDetails, buildingInfo, isUrgent } = body;
+    const { name, phone, pickup, dropoff, stops, date, time, distance, fare, vehicle, source, paymentMethod, fareType, eventPricingId, eventSurcharge, pickupDetails, dropoffDetails, buildingInfo, isPriority, priorityCharge } = body;
 
     if (!name || !phone || !pickup || !dropoff || !date || !time) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
@@ -36,7 +36,8 @@ export async function POST(req: NextRequest) {
         pickupDetails: pickupDetails || null,
         dropoffDetails: dropoffDetails || null,
         buildingInfo: buildingInfo || null,
-        isUrgent: isUrgent === true,
+        isPriority: isPriority === true,
+        priorityCharge: priorityCharge ? parseFloat(priorityCharge) : null,
       },
     });
 

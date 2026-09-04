@@ -14,7 +14,8 @@ interface ConfirmBookingParams {
   pickupDetails?: string;
   dropoffDetails?: string;
   buildingInfo?: string;
-  isUrgent?: boolean;
+  isPriority?: boolean;
+  priorityCharge?: number;
 }
 
 /**
@@ -23,7 +24,7 @@ interface ConfirmBookingParams {
  * Returns true when booking is complete (cash), false when redirecting (card).
  */
 export async function confirmBooking(params: ConfirmBookingParams): Promise<boolean> {
-  const { result, pickup, dropoff, stops, name, phone, date, time, vehicle, paymentMethod, fareType, activeEvent, pickupDetails, dropoffDetails, buildingInfo, isUrgent } = params;
+  const { result, pickup, dropoff, stops, name, phone, date, time, vehicle, paymentMethod, fareType, activeEvent, pickupDetails, dropoffDetails, buildingInfo, isPriority, priorityCharge } = params;
 
   try {
     if (paymentMethod === "card") {
@@ -33,7 +34,8 @@ export async function confirmBooking(params: ConfirmBookingParams): Promise<bool
         body: JSON.stringify({
           name, phone, pickup: pickup.address, dropoff: dropoff.address, stops,
           date, time, distance: result.distance, fare: result.fare, vehicle, fareType, source: "homepage",
-          isUrgent: isUrgent || false,
+          isPriority: isPriority || false,
+          priorityCharge: priorityCharge || null,
           eventPricingId: activeEvent?.id || null,
           eventSurcharge: activeEvent ? Math.round((result.fare - result.fare / (1 + activeEvent.increasePercent / 100)) * 100) / 100 : null,
           pickupDetails: pickupDetails || null, dropoffDetails: dropoffDetails || null, buildingInfo: buildingInfo || null,
@@ -50,7 +52,8 @@ export async function confirmBooking(params: ConfirmBookingParams): Promise<bool
         name, phone, pickup: pickup.address, dropoff: dropoff.address, stops,
         date, time, distance: result.distance, fare: result.fare, vehicle,
         paymentMethod: "cash", fareType, source: "homepage",
-        isUrgent: isUrgent || false,
+        isPriority: isPriority || false,
+        priorityCharge: priorityCharge || null,
         eventPricingId: activeEvent?.id || null,
         eventSurcharge: activeEvent ? Math.round((result.fare - result.fare / (1 + activeEvent.increasePercent / 100)) * 100) / 100 : null,
         pickupDetails: pickupDetails || null, dropoffDetails: dropoffDetails || null,

@@ -1,6 +1,6 @@
 "use client";
 
-import { MapPin, Navigation, User, Phone, Calendar, Clock, ArrowRight, Plus, X, CircleDot, AlertTriangle, Building2 } from "lucide-react";
+import { MapPin, Navigation, User, Phone, Calendar, Clock, ArrowRight, Plus, X, CircleDot, Car, Building2 } from "lucide-react";
 import { motion } from "framer-motion";
 import AddressInput from "@/components/booking/AddressInput";
 import { VEHICLES, type VehicleType } from "@/lib/fare";
@@ -31,8 +31,8 @@ interface BookingFormFieldsProps {
   onStopSelect: (index: number, place: google.maps.places.PlaceResult) => void;
   onAddStop: () => void;
   onRemoveStop: (index: number) => void;
-  isUrgent?: boolean;
-  onUrgentChange?: (v: boolean) => void;
+  isPriority?: boolean;
+  onPriorityChange?: (v: boolean) => void;
   onSubmit: () => void;
 }
 
@@ -41,7 +41,7 @@ export default function BookingFormFields({
   onNameChange, onPhoneChange, onDateChange, onTimeChange, onVehicleChange,
   onPickup, onDropoff, onManualPickup, onManualDropoff, onPickupDetailsChange, onDropoffDetailsChange,
   buildingInfo, onBuildingInfoChange,
-  isUrgent, onUrgentChange,
+  isPriority, onPriorityChange,
   onStopSelect, onAddStop, onRemoveStop, onSubmit,
 }: BookingFormFieldsProps) {
   const fieldCls = "flex items-center gap-3 bg-white rounded-xl px-4 py-3.5 border border-gray-200 focus-within:border-crimson/50 transition-colors";
@@ -196,18 +196,27 @@ export default function BookingFormFields({
         </button>
       </div>
 
-      {/* Urgent toggle */}
-      {onUrgentChange && (
-        <button type="button" onClick={() => onUrgentChange(!isUrgent)}
-          className={`flex items-center gap-2.5 w-full rounded-xl px-4 py-3.5 border text-sm font-medium transition-all cursor-pointer ${
-            isUrgent ? "bg-red-50 border-red-400 text-red-600" : "bg-white border-gray-200 text-navy/50 hover:border-red-300"
-          }`}>
-          <AlertTriangle className={`w-4 h-4 shrink-0 ${isUrgent ? "text-red-500" : "text-navy/30"}`} />
-          <span>Urgent Booking</span>
-          <div className={`ml-auto w-9 h-5 rounded-full transition-colors ${isUrgent ? "bg-red-500" : "bg-gray-300"}`}>
-            <div className={`w-4 h-4 bg-white rounded-full mt-0.5 transition-transform shadow ${isUrgent ? "translate-x-4.5" : "translate-x-0.5"}`} />
+      {/* Priority selection */}
+      {onPriorityChange && (
+        <div>
+          <label className="block text-navy/70 text-sm font-medium mb-1.5">Ride Type</label>
+          <div className="grid grid-cols-2 gap-3">
+            <button type="button" onClick={() => onPriorityChange(false)}
+              className={`flex items-center justify-center gap-2 rounded-xl px-4 py-3.5 border text-sm font-medium transition-all cursor-pointer ${
+                !isPriority ? "bg-crimson/10 border-crimson/50 text-crimson" : "bg-white border-gray-200 text-navy/60 hover:border-crimson/30"
+              }`}>
+              <Car className="w-4 h-4" />
+              <span>Standard</span>
+            </button>
+            <button type="button" onClick={() => onPriorityChange(true)}
+              className={`flex items-center justify-center gap-2 rounded-xl px-4 py-3.5 border text-sm font-medium transition-all cursor-pointer ${
+                isPriority ? "bg-orange-50 border-orange-400 text-orange-600" : "bg-white border-gray-200 text-navy/60 hover:border-orange-300"
+              }`}>
+              <Car className="w-4 h-4" />
+              <span>Priority</span>
+            </button>
           </div>
-        </button>
+        </div>
       )}
 
       {error && (

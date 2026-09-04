@@ -29,7 +29,12 @@ export default function BookingContent() {
   const [activeEvent, setActiveEvent] = useState<{ id: string; name: string; increasePercent: number } | null>(null);
   const [pickupDetails, setPickupDetails] = useState(""); const [dropoffDetails, setDropoffDetails] = useState("");
   const [buildingInfo, setBuildingInfo] = useState("");
-  const [isUrgent, setIsUrgent] = useState(false);
+  const [isPriority, setIsPriority] = useState(false);
+  const [priorityEnabled, setPriorityEnabled] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/settings/priority").then((r) => r.json()).then((d) => setPriorityEnabled(d.enabled)).catch(() => {});
+  }, []);
 
   // Fetch active event pricing when date/time changes (same pattern as dispatch)
   useEffect(() => {
@@ -45,6 +50,8 @@ export default function BookingContent() {
       ? Math.round(baseFareResult.fare * (1 + activeEvent.increasePercent / 100) * 100) / 100
       : baseFareResult.fare,
   } : null;
+
+  const priorityCharge = result ? (result.distance <= 3 ? 5 : 10) : 0;
 
   const buildAddress = (place: google.maps.places.PlaceResult) => {
     const n = place.name || "", f = place.formatted_address || "";
@@ -120,7 +127,7 @@ export default function BookingContent() {
                 onManualPickup={handleManualPickup} onManualDropoff={handleManualDropoff}
                 onPickupDetailsChange={setPickupDetails} onDropoffDetailsChange={setDropoffDetails}
                 buildingInfo={buildingInfo} onBuildingInfoChange={setBuildingInfo}
-                isUrgent={isUrgent} onUrgentChange={setIsUrgent}
+                isPriority={isPriority} onPriorityChange={priorityEnabled ? setIsPriority : undefined}
                 onStopSelect={handleStopSelect}
                 onAddStop={() => setStops((s) => [...s, { address: "", lat: 0, lng: 0 }])}
                 onRemoveStop={(i) => { setStops((s) => s.filter((_, j) => j !== i)); setBaseFareResult(null); }} onSubmit={getQuote} />
@@ -129,7 +136,7 @@ export default function BookingContent() {
                   distanceMiles={result.distance} fare={result.fare} vehicle={VEHICLES[vehicle].label}
                   surcharge={isOutsideOfficeRadius(pickup.lat, pickup.lng)} activeEvent={activeEvent}
                   pickupDetails={pickupDetails} dropoffDetails={dropoffDetails}
-                  buildingInfo={buildingInfo} isUrgent={isUrgent}
+                  buildingInfo={buildingInfo} isPriority={isPriority} priorityCharge={isPriority ? priorityCharge : 0}
                   name={name} phone={phone} date={date} time={time}
                   onReset={() => { setName(""); setPhone(""); setDate(""); setTime(""); setPickup(null); setDropoff(null); setStops([]); setBaseFareResult(null); }} />)}
             </div>)}

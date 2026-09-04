@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Script from "next/script";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight, MapPin, Navigation, User, Phone, Calendar, Clock, Plus, X, CircleDot, AlertTriangle } from "lucide-react";
+import { ArrowRight, MapPin, Navigation, User, Phone, Calendar, Clock, Plus, X, CircleDot, Car } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { calculateFare, isSundayOrHoliday, VEHICLES, type VehicleType } from "@/lib/fare";
 import { calcMultiSegmentDistance } from "@/lib/distanceCalc";
@@ -32,13 +32,21 @@ export default function BookingCard() {
   const [activeEvent, setActiveEvent] = useState<ActiveEvent | null>(null);
   const [pickupDetails, setPickupDetails] = useState(""); const [dropoffDetails, setDropoffDetails] = useState("");
   const [buildingInfo, setBuildingInfo] = useState("");
-  const [isUrgent, setIsUrgent] = useState(false);
+  const [isPriority, setIsPriority] = useState(false);
+  const [priorityEnabled, setPriorityEnabled] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/settings/priority").then((r) => r.json()).then((d) => setPriorityEnabled(d.enabled)).catch(() => {});
+  }, []);
+
+  const priorityCharge = result ? (result.distance <= 3 ? 5 : 10) : 0;
 
   const handleConfirm = async () => {
     if (!result || !pickup || !dropoff) return;
     setSaving(true);
     const fareType = paymentMethod === "cash" ? "meter" : "fixed";
-    const done = await confirmBooking({ result, pickup, dropoff, stops: stops.map((s) => s.address), name, phone, date, time, vehicle, paymentMethod, fareType, activeEvent, pickupDetails, dropoffDetails, buildingInfo, isUrgent });
+    const finalFare = isPriority ? result.fare + priorityCharge : result.fare;
+    const done = await confirmBooking({ result: { ...result, fare: finalFare }, pickup, dropoff, stops: stops.map((s) => s.address), name, phone, date, time, vehicle, paymentMethod, fareType, activeEvent, pickupDetails, dropoffDetails, buildingInfo, isPriority, priorityCharge: isPriority ? priorityCharge : 0 });
     setSaving(false);
     if (done) setBooked(true);
   };
@@ -105,17 +113,31 @@ export default function BookingCard() {
                 <span>{v.label}</span><span className="text-xs opacity-60">Up to {v.passengers}</span>
               </button>))}
           </div>
-          {/* Urgent toggle */}
-          <button type="button" onClick={() => setIsUrgent(!isUrgent)}
-            className={`flex items-center gap-2.5 w-full rounded-xl px-4 py-3 border text-sm font-medium transition-all cursor-pointer ${
-              isUrgent ? "bg-red-500/20 border-red-400/50 text-red-400" : "bg-white/10 border-white/10 text-white/50 hover:border-red-400/30"
-            }`}>
-            <AlertTriangle className={`w-4 h-4 shrink-0 ${isUrgent ? "text-red-400" : "text-white/30"}`} />
-            <span>Urgent Booking</span>
-            <div className={`ml-auto w-9 h-5 rounded-full transition-colors ${isUrgent ? "bg-red-500" : "bg-white/20"}`}>
-              <div className={`w-4 h-4 bg-white rounded-full mt-0.5 transition-transform shadow ${isUrgent ? "translate-x-4.5" : "translate-x-0.5"}`} />
+          {/* Priority selection */}
+          {priorityEnabled && (
+            <div>
+              <p className="text-white/50 text-xs mb-1.5">Ride Type</p>
+              <div className="grid grid-cols-2 gap-2.5">
+                <button type="button" onClick={() => setIsPriority(false)}
+                  className={`flex items-center gap-2 rounded-xl px-4 py-3 border text-sm font-medium transition-all cursor-pointer ${
+                    !isPriority ? "bg-gold/20 border-gold/50 text-gold" : "bg-white/10 border-white/10 text-white/60 hover:border-white/25"
+                  }`}>
+                  <Car className="w-4 h-4" />
+                  <span>Standard</span>
+                </button>
+                <button type="button" onClick={() => setIsPriority(true)}
+                  className={`flex items-center gap-2 rounded-xl px-4 py-3 border text-sm font-medium transition-all cursor-pointer ${
+                    isPriority ? "bg-orange-500/20 border-orange-400/50 text-orange-400" : "bg-white/10 border-white/10 text-white/60 hover:border-white/25"
+                  }`}>
+                  <Car className="w-4 h-4" />
+                  <div className="flex flex-col items-start">
+                    <span>Priority</span>
+                    {result && <span className="text-[10px] opacity-70">+£{priorityCharge}</span>}
+                  </div>
+                </button>
+              </div>
             </div>
-          </button>
+          )}
           <div className="flex items-center gap-2.5">
             <div className="grid grid-cols-2 gap-2.5 flex-1">
               <div className={rowCls}><Calendar className="w-4 h-4 text-white/30 shrink-0" /><label htmlFor="hero-date" className="sr-only">Date</label>
@@ -136,7 +158,8 @@ export default function BookingCard() {
           {result && pickup && (
             <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
               <BookingFareResult result={result} pickup={pickup} paymentMethod={paymentMethod}
-                onPaymentMethodChange={setPaymentMethod} onConfirm={handleConfirm} saving={saving} activeEvent={activeEvent} />
+                onPaymentMethodChange={setPaymentMethod} onConfirm={handleConfirm} saving={saving} activeEvent={activeEvent}
+                isPriority={isPriority} priorityCharge={isPriority ? priorityCharge : 0} />
             </motion.div>)}
         </AnimatePresence>
         {!result && <p className="text-center text-white/50 text-xs mt-3">No hidden fees. Free cancellation up to 1hr before.</p>}

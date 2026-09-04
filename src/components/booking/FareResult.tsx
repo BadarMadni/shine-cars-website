@@ -17,7 +17,8 @@ interface FareResultProps {
   pickupDetails?: string;
   dropoffDetails?: string;
   buildingInfo?: string;
-  isUrgent?: boolean;
+  isPriority?: boolean;
+  priorityCharge?: number;
   name: string;
   phone: string;
   date: string;
@@ -26,7 +27,7 @@ interface FareResultProps {
 }
 
 export default function FareResult({
-  pickup, dropoff, stops = [], distanceMiles, fare, vehicle, surcharge, activeEvent, pickupDetails, dropoffDetails, buildingInfo, isUrgent, name, phone, date, time, onReset,
+  pickup, dropoff, stops = [], distanceMiles, fare, vehicle, surcharge, activeEvent, pickupDetails, dropoffDetails, buildingInfo, isPriority, priorityCharge = 0, name, phone, date, time, onReset,
 }: FareResultProps) {
   const ref = useRef<HTMLDivElement>(null);
   const [booked, setBooked] = useState(false);
@@ -37,6 +38,8 @@ export default function FareResult({
     ref.current?.scrollIntoView({ behavior: "smooth", block: "center" });
   }, [fare]);
 
+  const totalFare = fare + priorityCharge;
+
   const confirmBooking = async () => {
     setSaving(true);
     try {
@@ -46,8 +49,8 @@ export default function FareResult({
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             name, phone, pickup, dropoff, stops, date, time,
-            distance: distanceMiles, fare, vehicle, fareType: "fixed", source: "booking-page",
-            isUrgent: isUrgent || false,
+            distance: distanceMiles, fare: totalFare, vehicle, fareType: "fixed", source: "booking-page",
+            isPriority: isPriority || false, priorityCharge: priorityCharge || null,
             pickupDetails: pickupDetails || null, dropoffDetails: dropoffDetails || null, buildingInfo: buildingInfo || null,
             eventPricingId: activeEvent?.id || null,
             eventSurcharge: activeEvent ? Math.round((fare - fare / (1 + activeEvent.increasePercent / 100)) * 100) / 100 : null,
@@ -66,8 +69,8 @@ export default function FareResult({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name, phone, pickup, dropoff, stops, date, time,
-          distance: distanceMiles, fare, paymentMethod: "cash", fareType: "meter", source: "booking-page",
-          isUrgent: isUrgent || false,
+          distance: distanceMiles, fare: totalFare, paymentMethod: "cash", fareType: "meter", source: "booking-page",
+          isPriority: isPriority || false, priorityCharge: priorityCharge || null,
           pickupDetails: pickupDetails || null, dropoffDetails: dropoffDetails || null, buildingInfo: buildingInfo || null,
           eventPricingId: activeEvent?.id || null,
           eventSurcharge: activeEvent ? Math.round((fare - fare / (1 + activeEvent.increasePercent / 100)) * 100) / 100 : null,
@@ -120,10 +123,11 @@ export default function FareResult({
               <>
                 <div className="text-white/50 text-xs mb-1">{paymentMethod === "cash" ? "Estimated Range (Meter)" : "Estimated Fare"}</div>
                 {paymentMethod === "cash" ? (
-                  <div className="text-4xl font-extrabold gradient-text">&pound;{fare.toFixed(2)} – £{(fare * 1.1).toFixed(2)}</div>
+                  <div className="text-4xl font-extrabold gradient-text">&pound;{totalFare.toFixed(2)} – £{(totalFare * 1.1).toFixed(2)}</div>
                 ) : (
-                  <div className="text-4xl font-extrabold gradient-text">&pound;{fare.toFixed(2)}</div>
+                  <div className="text-4xl font-extrabold gradient-text">&pound;{totalFare.toFixed(2)}</div>
                 )}
+                {priorityCharge > 0 && <div className="text-orange-400/80 text-xs mt-1">Includes +£{priorityCharge.toFixed(2)} priority charge</div>}
                 {paymentMethod === "cash" && <div className="text-orange-400/80 text-xs mt-1">Final fare based on actual meter distance</div>}
                 {surcharge && <div className="text-yellow-400/80 text-xs mt-1">Includes out-of-area surcharge</div>}
               </>
