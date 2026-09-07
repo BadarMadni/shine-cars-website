@@ -5,7 +5,7 @@ import Script from "next/script";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight, MapPin, Navigation, User, Phone, Calendar, Clock, Plus, X, CircleDot, Car } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { calculateFare, isSundayOrHoliday, VEHICLES, type VehicleType } from "@/lib/fare";
+import { calculateFare, isInMarchArea, isSundayOrHoliday, VEHICLES, type VehicleType } from "@/lib/fare";
 import { calcMultiSegmentDistance } from "@/lib/distanceCalc";
 import { useAuth } from "@/context/AuthContext";
 import SuccessModal from "@/components/booking/SuccessModal";
@@ -35,8 +35,12 @@ export default function BookingCard() {
   const [isPriority, setIsPriority] = useState(false);
   const [priorityEnabled, setPriorityEnabled] = useState(false);
 
+  const [marchSurchargeOn, setMarchSurchargeOn] = useState(true);
+
   useEffect(() => {
     fetch("/api/settings/priority").then((r) => r.json()).then((d) => setPriorityEnabled(d.enabled)).catch(() => {});
+    fetch("/api/settings/march-surcharge").then((r) => r.json())
+      .then((d) => setMarchSurchargeOn(d.enabled !== false)).catch(() => {});
   }, []);
 
   const priorityCharge = result ? (result.distance <= 3 ? 5 : 10) : 0;
@@ -67,7 +71,8 @@ export default function BookingCard() {
       setResult({ distance: 0, fare: 0 }); setLoading(false); return;
     }
     calcMultiSegmentDistance([pickup, ...stops, dropoff], async (miles) => {
-      const baseFare = calculateFare(miles, pickup.lat, pickup.lng, vehicle, isSundayOrHoliday(date));
+      const skipSurcharge = !marchSurchargeOn && isInMarchArea(pickup.lat, pickup.lng);
+      const baseFare = calculateFare(miles, pickup.lat, pickup.lng, vehicle, isSundayOrHoliday(date), skipSurcharge);
       const ev = await checkEvent(); setActiveEvent(ev);
       const fare = ev ? Math.round(baseFare * (1 + ev.increasePercent / 100) * 100) / 100 : baseFare;
       setResult({ distance: miles, fare }); setLoading(false);
@@ -159,7 +164,7 @@ export default function BookingCard() {
             <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
               <BookingFareResult result={result} pickup={pickup} paymentMethod={paymentMethod}
                 onPaymentMethodChange={setPaymentMethod} onConfirm={handleConfirm} saving={saving} activeEvent={activeEvent}
-                isPriority={isPriority} priorityCharge={isPriority ? priorityCharge : 0} />
+                isPriority={isPriority} priorityCharge={isPriority ? priorityCharge : 0} marchSurchargeOn={marchSurchargeOn} />
             </motion.div>)}
         </AnimatePresence>
         {!result && <p className="text-center text-white/50 text-xs mt-3">No hidden fees. Free cancellation up to 1hr before.</p>}

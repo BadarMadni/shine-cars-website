@@ -1,11 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Repeat, MapPin, Navigation, Clock, User, Phone, CheckCircle, Calendar } from "lucide-react";
 import AddressInput from "@/components/booking/AddressInput";
-import { VEHICLES, type VehicleType, calculateFare } from "@/lib/fare";
+import { VEHICLES, type VehicleType, calculateFare, isInMarchArea } from "@/lib/fare";
 import { calcMultiSegmentDistance } from "@/lib/distanceCalc";
 
 interface PlaceData { address: string; lat: number; lng: number }
@@ -23,6 +23,12 @@ export default function RecurringBookingForm({ mapsLoaded }: { mapsLoaded: boole
   const [fare, setFare] = useState<number | null>(null); const [distance, setDistance] = useState(0);
   const [loading, setLoading] = useState(false); const [saving, setSaving] = useState(false);
   const [error, setError] = useState(""); const [success, setSuccess] = useState(false);
+  const [marchSurchargeOn, setMarchSurchargeOn] = useState(true);
+
+  useEffect(() => {
+    fetch("/api/settings/march-surcharge").then((r) => r.json())
+      .then((d) => setMarchSurchargeOn(d.enabled !== false)).catch(() => {});
+  }, []);
 
   const toggleDay = (d: string) => setDays((p) => p.includes(d) ? p.filter((x) => x !== d) : [...p, d]);
 
@@ -36,7 +42,8 @@ export default function RecurringBookingForm({ mapsLoaded }: { mapsLoaded: boole
       [pickup, dropoff],
       (miles) => {
         setLoading(false); setDistance(miles);
-        setFare(calculateFare(miles, pickup.lat, pickup.lng, vehicle, false));
+        const skipSurcharge = !marchSurchargeOn && isInMarchArea(pickup.lat, pickup.lng);
+        setFare(calculateFare(miles, pickup.lat, pickup.lng, vehicle, false, skipSurcharge));
       },
       () => { setLoading(false); setError("Unable to calculate. Try again."); }
     );

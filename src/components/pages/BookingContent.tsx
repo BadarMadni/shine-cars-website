@@ -8,7 +8,7 @@ import FareResult from "@/components/booking/FareResult";
 import BookingFormFields from "@/components/pages/BookingFormFields";
 import RecurringBookingForm from "@/components/booking/RecurringBookingForm";
 import { useAuth } from "@/context/AuthContext";
-import { calculateFare, isOutsideOfficeRadius, isSundayOrHoliday, VEHICLES, type VehicleType } from "@/lib/fare";
+import { calculateFare, isInMarchArea, isOutsideOfficeRadius, isSundayOrHoliday, VEHICLES, type VehicleType } from "@/lib/fare";
 import { calcMultiSegmentDistance } from "@/lib/distanceCalc";
 
 interface PlaceData { address: string; lat: number; lng: number }
@@ -32,8 +32,12 @@ export default function BookingContent() {
   const [isPriority, setIsPriority] = useState(false);
   const [priorityEnabled, setPriorityEnabled] = useState(false);
 
+  const [marchSurchargeOn, setMarchSurchargeOn] = useState(true);
+
   useEffect(() => {
     fetch("/api/settings/priority").then((r) => r.json()).then((d) => setPriorityEnabled(d.enabled)).catch(() => {});
+    fetch("/api/settings/march-surcharge").then((r) => r.json())
+      .then((d) => setMarchSurchargeOn(d.enabled !== false)).catch(() => {});
   }, []);
 
   // Fetch active event pricing when date/time changes (same pattern as dispatch)
@@ -93,7 +97,8 @@ export default function BookingContent() {
       setBaseFareResult({ distance: 0, fare: 0 }); setLoading(false); return;
     }
     calcMultiSegmentDistance([pickup, ...stops, dropoff], (miles) => {
-      const baseFare = calculateFare(miles, pickup.lat, pickup.lng, vehicle, isSundayOrHoliday(date));
+      const skipSurcharge = !marchSurchargeOn && isInMarchArea(pickup.lat, pickup.lng);
+      const baseFare = calculateFare(miles, pickup.lat, pickup.lng, vehicle, isSundayOrHoliday(date), skipSurcharge);
       setBaseFareResult({ distance: miles, fare: baseFare });
       setLoading(false);
     }, () => { setLoading(false); setError("Unable to calculate distance. Please try again."); });
@@ -134,7 +139,7 @@ export default function BookingContent() {
               {result && pickup && dropoff && (
                 <FareResult pickup={pickup.address} dropoff={dropoff.address} stops={stops.map((s) => s.address)}
                   distanceMiles={result.distance} fare={result.fare} vehicle={VEHICLES[vehicle].label}
-                  surcharge={isOutsideOfficeRadius(pickup.lat, pickup.lng)} activeEvent={activeEvent}
+                  surcharge={isOutsideOfficeRadius(pickup.lat, pickup.lng) && !(!marchSurchargeOn && isInMarchArea(pickup.lat, pickup.lng))} activeEvent={activeEvent}
                   pickupDetails={pickupDetails} dropoffDetails={dropoffDetails}
                   buildingInfo={buildingInfo} isPriority={isPriority} priorityCharge={isPriority ? priorityCharge : 0}
                   name={name} phone={phone} date={date} time={time}

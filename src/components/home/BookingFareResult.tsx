@@ -5,7 +5,7 @@ import {
   ArrowRight, MapPin, Navigation, Route, PoundSterling,
   Banknote, CreditCard,
 } from "lucide-react";
-import { isOutsideOfficeRadius, pickupSurcharge } from "@/lib/fare";
+import { isOutsideOfficeRadius, isInMarchArea, pickupSurcharge } from "@/lib/fare";
 
 interface BookingFareResultProps {
   result: { distance: number; fare: number };
@@ -17,6 +17,7 @@ interface BookingFareResultProps {
   activeEvent?: { name: string; increasePercent: number } | null;
   isPriority?: boolean;
   priorityCharge?: number;
+  marchSurchargeOn?: boolean;
 }
 
 export default function BookingFareResult({
@@ -29,6 +30,7 @@ export default function BookingFareResult({
   activeEvent,
   isPriority,
   priorityCharge = 0,
+  marchSurchargeOn = true,
 }: BookingFareResultProps) {
   const displayFare = result.fare + priorityCharge;
   return (
@@ -39,7 +41,7 @@ export default function BookingFareResult({
         </div>
       )}
 
-      {isOutsideOfficeRadius(pickup.lat, pickup.lng) && (
+      {isOutsideOfficeRadius(pickup.lat, pickup.lng) && !((!marchSurchargeOn) && isInMarchArea(pickup.lat, pickup.lng)) && (
         <div className="text-yellow-400/80 text-xs">
           +£{pickupSurcharge(pickup.lat, pickup.lng).toFixed(2)} out-of-area surcharge applied
         </div>
