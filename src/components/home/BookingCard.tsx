@@ -36,11 +36,15 @@ export default function BookingCard() {
   const [priorityEnabled, setPriorityEnabled] = useState(false);
 
   const [marchSurchargeOn, setMarchSurchargeOn] = useState(true);
+  const [systemOpen, setSystemOpen] = useState(true);
+  const [reopeningTime, setReopeningTime] = useState("08:00");
 
   useEffect(() => {
     fetch("/api/settings/priority").then((r) => r.json()).then((d) => setPriorityEnabled(d.enabled)).catch(() => {});
     fetch("/api/settings/march-surcharge").then((r) => r.json())
       .then((d) => setMarchSurchargeOn(d.enabled !== false)).catch(() => {});
+    fetch("/api/settings/system-status").then((r) => r.json())
+      .then((d) => { setSystemOpen(d.open); setReopeningTime(d.reopeningTime || "08:00"); }).catch(() => {});
   }, []);
 
   const priorityCharge = result ? (result.distance <= 3 ? 5 : 10) : 0;
@@ -64,6 +68,13 @@ export default function BookingCard() {
     if (!name.trim() || !phone.trim()) { setError("Enter name & phone"); return; }
     if (!pickup || !dropoff || !pickup.address.trim() || !dropoff.address.trim()) { setError("Enter both addresses"); return; }
     if (!date || !time) { setError("Select date & time"); return; }
+    if (!systemOpen && date) {
+      const today = new Date(); const sel = new Date(date);
+      if (sel.toDateString() === today.toDateString()) {
+        setError(`Bookings are currently closed. We will be available from ${reopeningTime}. You can still book for future dates.`);
+        return;
+      }
+    }
     if (stops.some((s) => !s.lat)) { setError("Fill all stops or remove empty ones"); return; }
     setError(""); setLoading(true);
     if (!pickup.lat || !dropoff.lat) {
@@ -86,6 +97,12 @@ export default function BookingCard() {
     <>
       <Script src={`https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_KEY}&libraries=places`} onLoad={() => setMapsLoaded(true)} />
       <div className="bg-white/[0.07] backdrop-blur-2xl border border-white/15 rounded-3xl p-6 sm:p-7 shadow-2xl shadow-black/20">
+        {!systemOpen && (
+          <div className="bg-red-500/20 border border-red-400/30 rounded-xl px-4 py-3 mb-4 text-center">
+            <p className="text-red-300 text-sm font-semibold">Bookings are currently closed</p>
+            <p className="text-red-300/70 text-xs mt-0.5">We will be available from {reopeningTime}. You can still book for future dates.</p>
+          </div>
+        )}
         <h3 className="text-white font-bold text-lg mb-1">Book Your Ride</h3>
         <p className="text-white/60 text-sm mb-5">Get a quote in seconds</p>
         <div className="space-y-2.5">

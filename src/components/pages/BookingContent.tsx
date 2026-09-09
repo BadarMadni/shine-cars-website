@@ -33,11 +33,15 @@ export default function BookingContent() {
   const [priorityEnabled, setPriorityEnabled] = useState(false);
 
   const [marchSurchargeOn, setMarchSurchargeOn] = useState(true);
+  const [systemOpen, setSystemOpen] = useState(true);
+  const [reopeningTime, setReopeningTime] = useState("08:00");
 
   useEffect(() => {
     fetch("/api/settings/priority").then((r) => r.json()).then((d) => setPriorityEnabled(d.enabled)).catch(() => {});
     fetch("/api/settings/march-surcharge").then((r) => r.json())
       .then((d) => setMarchSurchargeOn(d.enabled !== false)).catch(() => {});
+    fetch("/api/settings/system-status").then((r) => r.json())
+      .then((d) => { setSystemOpen(d.open); setReopeningTime(d.reopeningTime || "08:00"); }).catch(() => {});
   }, []);
 
   // Fetch active event pricing when date/time changes (same pattern as dispatch)
@@ -91,6 +95,13 @@ export default function BookingContent() {
     if (!pickup || !dropoff) { setError("Please select both pickup and drop-off locations."); return; }
     if (!name.trim() || !phone.trim()) { setError("Please enter your name and phone number."); return; }
     if (!date || !time) { setError("Please select date and time."); return; }
+    if (!systemOpen && date) {
+      const today = new Date(); const sel = new Date(date);
+      if (sel.toDateString() === today.toDateString()) {
+        setError(`Bookings are currently closed. We will be available from ${reopeningTime}. You can still book for future dates.`);
+        return;
+      }
+    }
     if (stops.some((s) => !s)) { setError("Please fill in all stop locations or remove empty ones."); return; }
     setError(""); setLoading(true);
     if (!pickup.lat || !dropoff.lat) {
@@ -123,6 +134,12 @@ export default function BookingContent() {
               <div className="bg-navy rounded-3xl p-6 sm:p-10"><RecurringBookingForm mapsLoaded={mapsLoaded} /></div>
             ) : (
             <div className="bg-gray-50 rounded-3xl p-6 sm:p-10 border border-gray-100">
+              {!systemOpen && (
+                <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 mb-6 text-center">
+                  <p className="text-red-600 text-sm font-semibold">Bookings are currently closed</p>
+                  <p className="text-red-500/70 text-xs mt-0.5">We will be available from {reopeningTime}. You can still book for future dates.</p>
+                </div>
+              )}
               <h2 className="text-2xl font-bold text-navy mb-1">Get Instant <span className="gradient-text">Quote</span></h2>
               <p className="text-navy/50 text-sm mb-8">Enter your details below for an estimated fare.</p>
               <BookingFormFields name={name} phone={phone} date={date} time={time} vehicle={vehicle} error={error} loading={loading}
