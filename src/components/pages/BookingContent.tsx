@@ -8,7 +8,7 @@ import FareResult from "@/components/booking/FareResult";
 import BookingFormFields from "@/components/pages/BookingFormFields";
 import RecurringBookingForm from "@/components/booking/RecurringBookingForm";
 import { useAuth } from "@/context/AuthContext";
-import { calculateFare, isInMarchArea, isOutsideOfficeRadius, isSundayOrHoliday, VEHICLES, type VehicleType } from "@/lib/fare";
+import { calculateFare, isInMarchArea, isOutsideOfficeRadius, isSundayOrHoliday, VEHICLES, DEFAULT_SURCHARGE, type VehicleType, type SurchargeConfig } from "@/lib/fare";
 import { calcMultiSegmentDistance } from "@/lib/distanceCalc";
 
 interface PlaceData { address: string; lat: number; lng: number }
@@ -33,6 +33,7 @@ export default function BookingContent() {
   const [priorityEnabled, setPriorityEnabled] = useState(false);
 
   const [marchSurchargeOn, setMarchSurchargeOn] = useState(true);
+  const [surchargeConfig, setSurchargeConfig] = useState<SurchargeConfig>(DEFAULT_SURCHARGE);
   const [systemOpen, setSystemOpen] = useState(true);
   const [reopeningTime, setReopeningTime] = useState("08:00");
 
@@ -42,6 +43,8 @@ export default function BookingContent() {
       .then((d) => setMarchSurchargeOn(d.enabled !== false)).catch(() => {});
     fetch("/api/settings/system-status").then((r) => r.json())
       .then((d) => { setSystemOpen(d.open); setReopeningTime(d.reopeningTime || "08:00"); }).catch(() => {});
+    fetch("/api/settings/area-surcharge").then((r) => r.json())
+      .then((d) => setSurchargeConfig({ radiusMiles: d.radiusMiles ?? 3, perMile: d.perMile ?? 1 })).catch(() => {});
   }, []);
 
   // Fetch active event pricing when date/time changes (same pattern as dispatch)
@@ -109,7 +112,7 @@ export default function BookingContent() {
     }
     calcMultiSegmentDistance([pickup, ...stops, dropoff], (miles) => {
       const skipSurcharge = !marchSurchargeOn && isInMarchArea(pickup.lat, pickup.lng);
-      const baseFare = calculateFare(miles, pickup.lat, pickup.lng, vehicle, isSundayOrHoliday(date), skipSurcharge);
+      const baseFare = calculateFare(miles, pickup.lat, pickup.lng, vehicle, isSundayOrHoliday(date), skipSurcharge, surchargeConfig);
       setBaseFareResult({ distance: miles, fare: baseFare });
       setLoading(false);
     }, () => { setLoading(false); setError("Unable to calculate distance. Please try again."); });

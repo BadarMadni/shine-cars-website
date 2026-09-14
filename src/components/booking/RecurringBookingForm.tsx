@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Repeat, MapPin, Navigation, Clock, User, Phone, CheckCircle, Calendar } from "lucide-react";
 import AddressInput from "@/components/booking/AddressInput";
-import { VEHICLES, type VehicleType, calculateFare, isInMarchArea } from "@/lib/fare";
+import { VEHICLES, type VehicleType, calculateFare, isInMarchArea, DEFAULT_SURCHARGE, type SurchargeConfig } from "@/lib/fare";
 import { calcMultiSegmentDistance } from "@/lib/distanceCalc";
 
 interface PlaceData { address: string; lat: number; lng: number }
@@ -24,10 +24,13 @@ export default function RecurringBookingForm({ mapsLoaded }: { mapsLoaded: boole
   const [loading, setLoading] = useState(false); const [saving, setSaving] = useState(false);
   const [error, setError] = useState(""); const [success, setSuccess] = useState(false);
   const [marchSurchargeOn, setMarchSurchargeOn] = useState(true);
+  const [surchargeConfig, setSurchargeConfig] = useState<SurchargeConfig>(DEFAULT_SURCHARGE);
 
   useEffect(() => {
     fetch("/api/settings/march-surcharge").then((r) => r.json())
       .then((d) => setMarchSurchargeOn(d.enabled !== false)).catch(() => {});
+    fetch("/api/settings/area-surcharge").then((r) => r.json())
+      .then((d) => setSurchargeConfig({ radiusMiles: d.radiusMiles ?? 3, perMile: d.perMile ?? 1 })).catch(() => {});
   }, []);
 
   const toggleDay = (d: string) => setDays((p) => p.includes(d) ? p.filter((x) => x !== d) : [...p, d]);
@@ -43,7 +46,7 @@ export default function RecurringBookingForm({ mapsLoaded }: { mapsLoaded: boole
       (miles) => {
         setLoading(false); setDistance(miles);
         const skipSurcharge = !marchSurchargeOn && isInMarchArea(pickup.lat, pickup.lng);
-        setFare(calculateFare(miles, pickup.lat, pickup.lng, vehicle, false, skipSurcharge));
+        setFare(calculateFare(miles, pickup.lat, pickup.lng, vehicle, false, skipSurcharge, surchargeConfig));
       },
       () => { setLoading(false); setError("Unable to calculate. Try again."); }
     );
