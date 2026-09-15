@@ -38,6 +38,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${outfit.variable} ${manrope.variable}`}>
+      <head>
+        <meta name="google-site-verification" content="S8i9f3db37_i9A40WBQNU86W0G5Ujm8-B_ZU1ai9eW0" />
+      </head>
       <body
         className="min-h-screen flex flex-col antialiased"
         style={{ fontFamily: "var(--font-outfit), sans-serif" }}
